@@ -1,0 +1,2 @@
+Koden er vell strukturert og lett å lese, man bruker funksjoner for å separere forskjellige deler av koden. Og det koden funker fint. Jeg prøvde meg på å fargelegge bakgrunnen men det var litt vanskeligere enn jeg trodde det kom til å bli så jeg gjorde ikke det.
+når noen vinner så sjekker man alle rader, kollonner hver gang. Og det kan man egentlig endre til at man bare sjekker rad, kolonne og potensielt diagonalt forrige valg istedenfor.
