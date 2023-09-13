@@ -7,37 +7,7 @@ const MIN_NUMBER = 1;
 const randomNumber = Math.floor(Math.random() * (MAX_NUMBER - MIN_NUMBER + 1)) + MIN_NUMBER;
 let tries = 0;
 
-const LOVLIGE_SPRAAK = {"n":"no","e":"en"}
-let valgtSpraak = "no";
-let language = await velgSpraak(LOVLIGE_SPRAAK);
-let spraak = OPPSLAGSVERK[language]
-const OPPSLAGSVERK = {
-    en: {
-        welcometext: "Guess a number between 1 and 100",
-        yourguess: "your guess ",
-        rightGuess: "You guessed it! ",
-        tooHigh: "Too high",
-        tooLow: "Too low",
-        whatLanguage: "Which language do you preffer?",
-        yourLanguage: "You choosed ",
-        playAgain: "Do you want to play again?",
-        nothx: "No",
-        yesPlease: "Yes"
-    },
-    no: {
-        welcometext: "Gjett et tall mellom 1 og 100",
-        yourguess: "Hva gjetter du ",
-        rightGuess: "Du gjettet riktig! ",
-        tooHigh: "For høyt",
-        tooLow: "For lavt",
-        whatLanguage: "Hvilke språk foretrekker du?",
-        yourLanguage: "du valgte ",
-        playAgain: "Vil du spille igjen?",
-        nothx: "Nei",
-        yesPlease: "Yes"
 
-    }
-};
 
 do {
     valgtSpraak = await rl.question(spraak.valgtSpraak + " : ");
@@ -73,7 +43,7 @@ while (isPlaying) {
 }
 
 while (isPlaying) {
-    const again = await rl.question(`Do you want to play again?`);getStats()
+    const again = await rl.question(`Do you want to play again?`);
     if (again === "yes") {
         while (isPlaying) {
             const answer = await rl.question('Your guess: ');
