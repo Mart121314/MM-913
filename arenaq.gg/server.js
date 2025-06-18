@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors({ origin: 'http://localhost:4200' }));
 
 // Serve Angular static files
-app.use(express.static(path.join(__dirname, 'dist/arenaq')));
+app.use(express.static(path.join(__dirname, 'dist/arenaq.gg')));
 
 // API route
 app.get('/api/token', async (req, res) => {
@@ -38,7 +38,7 @@ app.get('/api/token', async (req, res) => {
 
 // Wildcard route for Angular
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist/arenaq/index.html'));
+  res.sendFile(path.join(__dirname, 'dist/arenaq.gg/index.html'));
 });
 
 // Start the server

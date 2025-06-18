@@ -1,0 +1,1 @@
+import{Da as t}from"./chunk-QCMIUKNS.js";var n=class e{static \u0275fac=function(s){return new(s||e)};static \u0275cmp=t({type:e,selectors:[["app-bis-players"]],decls:0,vars:0,template:function(s,a){},encapsulation:2})};export{n as BisPlayersComponent};
