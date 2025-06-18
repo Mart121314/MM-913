@@ -7,11 +7,13 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ Allow requests from your Angular app (localhost:4200)
+// ✅ CORS for local dev
 app.use(cors({ origin: 'http://localhost:4200' }));
 
+// ✅ Serve Angular static files
 app.use(express.static(path.join(__dirname, 'dist/arenaq')));
-// Your token route
+
+// ✅ API route
 app.get('/api/token', async (req, res) => {
   try {
     const response = await axios.post(
@@ -34,14 +36,12 @@ app.get('/api/token', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
-
-app.get('/', (req, res) => {
-  res.send('✅ ArenaQ API is live.');
-});
-
+// ✅ Fallback: Angular index.html for all other routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist/arenaq/index.html'));
+});
+
+// ✅ Start server
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
