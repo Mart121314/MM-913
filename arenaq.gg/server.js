@@ -7,13 +7,13 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ CORS for local dev
+// CORS
 app.use(cors({ origin: 'http://localhost:4200' }));
 
-// ✅ Serve Angular static files
+// Serve Angular static files
 app.use(express.static(path.join(__dirname, 'dist/arenaq')));
 
-// ✅ API route
+// API route
 app.get('/api/token', async (req, res) => {
   try {
     const response = await axios.post(
@@ -36,12 +36,12 @@ app.get('/api/token', async (req, res) => {
   }
 });
 
-// ✅ Fallback: Angular index.html for all other routes
+// Wildcard route for Angular
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist/arenaq/index.html'));
 });
 
-// ✅ Start server
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
