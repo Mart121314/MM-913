@@ -11,9 +11,9 @@ import { BaseApiService } from './api.service';
 export class WowApiService extends BaseApiService {
   private baseUrl = 'https://eu.api.blizzard.com';
 
-  getFull3v3Ladder(): Observable<any[]> {
-  const region = 'eu'; // or 'us'
+getFull3v3Ladder(): Observable<any[]> {
   const seasonId = 11;
+  const region = 'eu';
 
   return this.authService.getAccessToken().pipe(
     switchMap((token) => {
@@ -26,18 +26,17 @@ export class WowApiService extends BaseApiService {
 
       return from(pages).pipe(
         mergeMap((page) =>
-          this.http
-            .get<any>(
-              `https://${region}.api.blizzard.com/data/wow/pvp-season/${seasonId}/pvp-leaderboard/3v3?page=${page}&namespace=dynamic-classic-${region}&locale=en_GB`,
-              { headers }
-            )
-            .pipe(catchError(() => of({ entries: [] })))
+          this.http.get<any>(
+            `https://${region}.api.blizzard.com/data/wow/pvp-season/${seasonId}/pvp-leaderboard/3v3?page=${page}&namespace=dynamic-classic-${region}&locale=en_GB`,
+            { headers }
+          ).pipe(catchError(() => of({ entries: [] })))
         ),
         toArray(),
         map((responses) => {
           const all = responses.flatMap((res) => res.entries || []);
           const unique = all.filter(
-            (v, i, a) => a.findIndex((t) => t.character?.id === v.character?.id) === i
+            (v, i, a) =>
+              a.findIndex((t) => t.character?.id === v.character?.id) === i
           );
           return unique;
         })
