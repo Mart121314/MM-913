@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -9,6 +10,7 @@ const PORT = process.env.PORT || 3000;
 // ✅ Allow requests from your Angular app (localhost:4200)
 app.use(cors({ origin: 'http://localhost:4200' }));
 
+app.use(express.static(path.join(__dirname, 'dist/arenaq')));
 // Your token route
 app.get('/api/token', async (req, res) => {
   try {
@@ -38,4 +40,8 @@ app.listen(PORT, () => {
 
 app.get('/', (req, res) => {
   res.send('✅ ArenaQ API is live.');
+});
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist/arenaq/index.html'));
 });
