@@ -1,0 +1,45 @@
+<header class="header">
+  <!-- Logo -->
+  <div class="logo">
+    <a routerLink="/">ArenaQ</a>
+  </div>
+
+  <!-- Navigation Links -->
+  <nav class="nav">
+    <a routerLink="/" routerLinkActive="active">Tracker</a>
+    <a routerLink="/leaderboard" routerLinkActive="active">Leaderboard</a>
+    <a routerLink="/archives" routerLinkActive="active">Archives</a>
+    <a routerLink="/cutoffs" routerLinkActive="active">Cutoffs</a>
+    <a routerLink="/bis-gear" routerLinkActive="active">BiS Gear</a>
+    <a routerLink="/bis-players" routerLinkActive="active">BiS Players</a>
+  </nav>
+
+
+  <!-- Region Selector -->
+  <div class="region-selector">
+    <img
+      src="\assets\icons\eu.webp"
+      alt="EU"
+      class="region-icon"
+      [class.selected]="selectedRegion === 'EU'"
+      (click)="setRegion('EU')"
+    />
+    <img
+      src="assets/icons/us.png"
+      alt="US"
+      class="region-icon"
+      [class.selected]="selectedRegion === 'US'"
+      (click)="setRegion('US')"
+    />
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      placeholder="Search for characters..."
+    />
+    <button (click)="performSearch()">Search</button>
+  </div>
+</header>

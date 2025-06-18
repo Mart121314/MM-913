@@ -1,0 +1,8 @@
+<div class="cutoff-container" *ngIf="gladiatorCutoff !== null">
+  <h2>Season 11 Gladiator Cutoff</h2>
+  <p>Total Players: {{ totalPlayers }}</p>
+  <p>Current Cutoff: <strong>{{ gladiatorCutoff }}</strong> Rating</p>
+</div>
+<div *ngIf="gladiatorCutoff === null">
+  <p>Loading cutoff data or API unavailable...</p>
+</div>
