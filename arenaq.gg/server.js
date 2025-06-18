@@ -2,18 +2,20 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// CORS
+// ✅ CORS for Angular frontend during development
 app.use(cors({ origin: 'http://localhost:4200' }));
 
-// Serve Angular static files
-app.use(express.static(path.join(__dirname, 'dist/arenaq.gg')));
+// ✅ Serve Angular static files (built with `ng build --configuration production`)
+const angularDistPath = path.join(__dirname, 'dist/arenaq.gg');
+app.use(express.static(angularDistPath));
 
-// API route
+// ✅ API route for Blizzard OAuth token
 app.get('/api/token', async (req, res) => {
   try {
     const response = await axios.post(
@@ -36,12 +38,17 @@ app.get('/api/token', async (req, res) => {
   }
 });
 
-// Wildcard route for Angular
+// ✅ Fallback route to Angular's index.html for SPA support (safe)
+const indexPath = path.join(angularDistPath, 'index.html');
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist/arenaq.gg/index.html'));
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(500).send('⚠️ index.html not found – did you run `ng build` and commit the output?');
+  }
 });
 
-// Start the server
+// ✅ Start the server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });
