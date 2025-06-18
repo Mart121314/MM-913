@@ -9,6 +9,6 @@ export class AuthenticationService {
   constructor(private http: HttpClient) {}
 
   getAccessToken(): Observable<{ access_token: string }> {
-    return this.http.get<{ access_token: string }>('http://localhost:3000/api/token');
+    return this.http.get<{ access_token: string }>('https://arenaq-api.onrender.com/api/token');
   }
 }
