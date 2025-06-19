@@ -7,7 +7,7 @@ import { LeaderboardApiService } from './leaderboardapi.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './leaderboard.component.html',
-  styleUrl: './leaderboard.component.css'
+  styleUrls: ['./leaderboard.component.css']
 })
 export class LeaderboardComponent implements OnInit {
   players: any[] = [];

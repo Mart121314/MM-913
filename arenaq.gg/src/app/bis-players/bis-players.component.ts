@@ -7,7 +7,7 @@ import { BisPlayerApiService } from './bis-playerapi.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './bis-players.component.html',
-  styleUrl: './bis-players.component.css'
+  styleUrls: ['./bis-players.component.css']
 })
 export class BisPlayersComponent implements OnInit {
   playersByClass: Record<string, any[]> = {};

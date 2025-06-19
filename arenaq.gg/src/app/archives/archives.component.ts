@@ -7,7 +7,7 @@ import { ArchivesApiService } from './archivesapi.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './archives.component.html',
-  styleUrl: './archives.component.css'
+  styleUrls: ['./archives.component.css']
 })
 export class ArchivesComponent implements OnInit {
   seasons: any[] = [];

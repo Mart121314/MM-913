@@ -7,7 +7,7 @@ import { PlayerApiService } from './playerapi.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './player.component.html',
-  styleUrl: './player.component.css'
+  styleUrls: ['./player.component.css']
 })
 export class PlayerComponent implements OnInit {
   equipment: any;

@@ -7,7 +7,7 @@ import { BisGearService } from './bis-gear.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './bis-gear.component.html',
-  styleUrl: './bis-gear.component.css'
+  styleUrls: ['./bis-gear.component.css']
 })
 export class BisGearComponent implements OnInit {
   topGear: { item: string; count: number }[] = [];

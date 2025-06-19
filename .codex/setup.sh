@@ -8,4 +8,5 @@ export NG_CLI_ANALYTICS=false
 npm install -g @angular/cli@19
 
 # Install project dependencies
-npm ci            # or `npm install` if you don’t use package-lock.json
+npm ci # or `npm install` if you don’t use package-lock.json
+
