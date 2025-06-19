@@ -1,8 +1,12 @@
 import { Injectable } from '@angular/core';
 
+import { map, Observable } from 'rxjs';
+
+
 import { Observable, map } from 'rxjs';
 
 import { map, Observable } from 'rxjs';
+
 
 import { WowApiService } from '../wow-api.service';
 
@@ -10,6 +14,10 @@ import { WowApiService } from '../wow-api.service';
   providedIn: 'root',
 })
 export class BisPlayerApiService {
+
+  constructor(private wowApi: WowApiService) {}
+
+
 
   constructor(private wow: WowApiService) {}
 
@@ -34,6 +42,7 @@ export class BisPlayerApiService {
 
   constructor(private wowApi: WowApiService) {}
 
+
   /**
    * Return the top players for each class based on the 3v3 ladder.
    */
@@ -47,12 +56,21 @@ export class BisPlayerApiService {
             byClass[cls] = [];
           }
           byClass[cls].push(p);
+
         });
         Object.keys(byClass).forEach((cls) => {
           byClass[cls].sort((a, b) => b.rating - a.rating);
           byClass[cls] = byClass[cls].slice(0, limit);
         });
         return byClass;
+
+        });
+        Object.keys(byClass).forEach((cls) => {
+          byClass[cls].sort((a, b) => b.rating - a.rating);
+          byClass[cls] = byClass[cls].slice(0, limit);
+        });
+        return byClass;
+
 
       })
     );

@@ -7,6 +7,10 @@ import { WowApiService } from '../wow-api.service';
 })
 export class ActivityApiService {
 
+    constructor(private wowApi: WowApiService) { }
+
+
+
     constructor(private wow: WowApiService) { }
 
     /** Fetch information for Cataclysm Classic seasons 9–11 */
@@ -15,6 +19,7 @@ export class ActivityApiService {
         return forkJoin(seasons.map(id => this.wow.getSeason(id)));
 
     constructor(private wowApi: WowApiService) { }
+
 
     /** Fetch information about Cataclysm Classic seasons. */
     getArchives(): Observable<any[]> {

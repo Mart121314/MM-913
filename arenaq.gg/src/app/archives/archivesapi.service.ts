@@ -6,6 +6,11 @@ import { WowApiService } from '../wow-api.service';
     providedIn: 'root'
 })
 export class ArchivesApiService {
+    constructor(private wowApi: WowApiService) { }
+
+
+    getSeasons(ids: number[]): Observable<any[]> {
+        return forkJoin(ids.map(id => this.wowApi.getSeason(id)));
 
     constructor(private wow: WowApiService) { }
 
@@ -17,6 +22,7 @@ export class ArchivesApiService {
 
     getSeasons(ids: number[]): Observable<any[]> {
         return forkJoin(ids.map(id => this.wowApi.getSeason(id)));
+
 
     }
 }

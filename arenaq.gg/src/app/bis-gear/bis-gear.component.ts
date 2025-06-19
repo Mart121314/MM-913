@@ -1,11 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { WowApiService } from '../wow-api.service';
+import { BisGearService } from './bis-gear.service';
+import { switchMap } from 'rxjs';
+
+
 import { BisGearService } from './bis-gear.service';
 
 import { WowApiService } from '../wow-api.service';
 import { BisGearService } from './bis-gear.service';
 import { switchMap } from 'rxjs';
+
 
 
 @Component({
@@ -16,6 +22,12 @@ import { switchMap } from 'rxjs';
   styleUrl: './bis-gear.component.css'
 })
 export class BisGearComponent implements OnInit {
+
+  topGear: { itemId: number; count: number }[] = [];
+
+  constructor(private wowApi: WowApiService, private gearSvc: BisGearService) {}
+
+
 
   topGear: { item: string; count: number }[] = [];
 
@@ -28,6 +40,7 @@ export class BisGearComponent implements OnInit {
   topGear: { itemId: number; count: number }[] = [];
 
   constructor(private wowApi: WowApiService, private gearSvc: BisGearService) {}
+
 
   ngOnInit(): void {
     this.wowApi

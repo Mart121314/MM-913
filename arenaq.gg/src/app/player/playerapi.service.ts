@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
 
+import { WowApiService } from '../wow-api.service';
+import { Observable } from 'rxjs';
+
+
+
 import { Observable, map } from 'rxjs';
 import { WowApiService } from '../wow-api.service';
 
@@ -7,10 +12,12 @@ import { WowApiService } from '../wow-api.service';
 import { Observable } from 'rxjs';
 
 
+
 @Injectable({
   providedIn: 'root'
 })
 export class PlayerApiService {
+
 
   constructor(private wow: WowApiService) {}
 
@@ -19,6 +26,7 @@ export class PlayerApiService {
     return this.wow
       .getCharacterEquipment(realm, name)
       .pipe(map((res) => (res.equipped_items || []).map((i: any) => i.item.name)));
+
 
   constructor(private wowApi: WowApiService) {}
 

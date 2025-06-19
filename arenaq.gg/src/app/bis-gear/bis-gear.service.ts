@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
 
+import { WowApiService } from '../wow-api.service';
+import { forkJoin, map, Observable } from 'rxjs';
+
+
 import { map, Observable, switchMap, mergeMap, toArray, of, from, catchError } from 'rxjs';
 import { WowApiService } from '../wow-api.service';
 
 import { WowApiService } from '../wow-api.service';
 import { forkJoin, map, Observable } from 'rxjs';
-
 
 @Injectable({
   providedIn: 'root'
@@ -46,6 +49,7 @@ export class BisGearService {
         )
       )
     );
+
 
   constructor(private wowApi: WowApiService) {}
 
