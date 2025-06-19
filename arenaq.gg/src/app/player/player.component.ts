@@ -15,8 +15,8 @@ export class PlayerComponent implements OnInit {
   constructor(private playerApi: PlayerApiService) {}
 
   ngOnInit(): void {
-    // Example: hardcoded player
-    this.playerApi.getEquipment('some-realm', 'some-player').subscribe((e) => {
+    // Example: hardcoded player name from sample data
+    this.playerApi.getEquipment('Gladsup').subscribe((e) => {
       this.equipment = e;
     });
   }

@@ -1,33 +1,17 @@
 import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
-import { WowApiService } from '../wow-api.service';
+import { Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BisPlayerApiService {
-  constructor(private wowApi: WowApiService) {}
+  constructor(private http: HttpClient) {}
 
   /**
-   * Return the top players for each class based on the 3v3 ladder.
+   * Retrieve the best players grouped by class from a local JSON file.
    */
-  getTopPlayersByClass(limit: number = 5): Observable<Record<string, any[]>> {
-    return this.wowApi.getFull3v3Ladder(5).pipe(
-      map((players) => {
-        const byClass: Record<string, any[]> = {};
-        players.forEach((p) => {
-          const cls = p.character.playable_class.name;
-          if (!byClass[cls]) {
-            byClass[cls] = [];
-          }
-          byClass[cls].push(p);
-        });
-        Object.keys(byClass).forEach((cls) => {
-          byClass[cls].sort((a, b) => b.rating - a.rating);
-          byClass[cls] = byClass[cls].slice(0, limit);
-        });
-        return byClass;
-      })
-    );
+  getTopPlayersByClass(): Observable<Record<string, any[]>> {
+    return this.http.get<Record<string, any[]>>('assets/bis-players.json');
   }
 }

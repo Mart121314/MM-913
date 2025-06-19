@@ -1,14 +1,16 @@
 import { Injectable } from '@angular/core';
-import { WowApiService } from '../wow-api.service';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LeaderboardApiService {
-  constructor(private wowApi: WowApiService) {}
+  constructor(private http: HttpClient) {}
 
-  getPage(page: number): Observable<any[]> {
-    return this.wowApi.getLeaderboardPage(11, page);
+  getPage(_page: number): Observable<any[]> {
+    return this.http
+      .get<any>('assets/leaderboard.json')
+      .pipe(map((d) => d.entries));
   }
 }
