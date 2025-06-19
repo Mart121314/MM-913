@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
+import { BisGearService } from './bis-gear.service';
+
 import { WowApiService } from '../wow-api.service';
 import { BisGearService } from './bis-gear.service';
 import { switchMap } from 'rxjs';
+
 
 @Component({
   selector: 'app-bis-gear',
@@ -12,6 +16,15 @@ import { switchMap } from 'rxjs';
   styleUrl: './bis-gear.component.css'
 })
 export class BisGearComponent implements OnInit {
+
+  topGear: { item: string; count: number }[] = [];
+
+  constructor(private gearSvc: BisGearService) {}
+
+  ngOnInit(): void {
+    this.gearSvc.getMostPopularGear().subscribe((gear) => {
+      this.topGear = gear.slice(0, 10);
+
   topGear: { itemId: number; count: number }[] = [];
 
   constructor(private wowApi: WowApiService, private gearSvc: BisGearService) {}
