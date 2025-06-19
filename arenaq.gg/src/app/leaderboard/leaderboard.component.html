@@ -1,0 +1,29 @@
+<table>
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Name</th>
+      <th>Class</th>
+      <th>Realm</th>
+      <th>Wins</th>
+      <th>Losses</th>
+      <th>Rating</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let p of players">
+      <td>{{p.rank}}</td>
+      <td>{{p.character.name}}</td>
+      <td>{{p.character.playable_class.name}}</td>
+      <td>{{p.character.realm.name}}</td>
+      <td>{{p.season_match_statistics?.won}}</td>
+      <td>{{p.season_match_statistics?.lost}}</td>
+      <td>{{p.rating}}</td>
+    </tr>
+  </tbody>
+</table>
+<div class="pager">
+  <button (click)="loadPage(currentPage - 1)" [disabled]="currentPage <= 1">Prev</button>
+  <span>Page {{currentPage}}</span>
+  <button (click)="loadPage(currentPage + 1)">Next</button>
+</div>
