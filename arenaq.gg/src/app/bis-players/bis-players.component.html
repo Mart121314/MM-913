@@ -1,0 +1,9 @@
+<div *ngFor="let entry of playersByClass | keyvalue">
+  <h3>{{ entry.key }}</h3>
+  <div *ngFor="let p of entry.value" class="player-block">
+    <strong>{{ p.name }}</strong> - {{ p.rating }}
+    <ul>
+      <li *ngFor="let item of p.gear">{{ item }}</li>
+    </ul>
+  </div>
+</div>
