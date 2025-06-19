@@ -1,21 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
+import { WowApiService } from '../wow-api.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class ArchivesApiService {
+    constructor(private wowApi: WowApiService) { }
 
-    private apiUrl = 'https://api.example.com/archives'; // Replace with the actual API URL
-
-    constructor(private http: HttpClient) { }
-
-    getPreviousSeasons(): Observable<any> {
-        return this.http.get<any>(`${this.apiUrl}/previous-seasons`);
-    }
-
-    getSeasonDetails(seasonId: string): Observable<any> {
-        return this.http.get<any>(`${this.apiUrl}/season-details/${seasonId}`);
+    getSeasons(ids: number[]): Observable<any[]> {
+        return forkJoin(ids.map(id => this.wowApi.getSeason(id)));
     }
 }

@@ -1,11 +1,22 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivityApiService } from './activityapi.service';
 
 @Component({
   selector: 'app-activity',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './activity.component.html',
   styleUrl: './activity.component.css'
 })
-export class ActivityComponent {
+export class ActivityComponent implements OnInit {
+  archives: any[] = [];
 
+  constructor(private activityApi: ActivityApiService) {}
+
+  ngOnInit(): void {
+    this.activityApi.getArchives().subscribe((data) => {
+      this.archives = data;
+    });
+  }
 }
