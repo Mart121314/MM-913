@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { WowApiService } from '../wow-api.service';
+import { CutoffApiService, CutoffData } from './cutoffapi.service';
 
 @Component({
   selector: 'app-cutoffs',
@@ -11,23 +11,16 @@ import { WowApiService } from '../wow-api.service';
 })
 export class CutoffsComponent implements OnInit {
   gladiatorCutoff: number | null = null;
-  totalPlayers: number = 0;
+  rank1Cutoff: number | null = null;
+  totalPlayers = 0;
 
-  constructor(private wowApi: WowApiService) {}
+  constructor(private cutoffApi: CutoffApiService) {}
 
   ngOnInit(): void {
-  this.wowApi.getFull3v3Ladder().subscribe({
-    next: (entries) => {
-      this.totalPlayers = entries.length;
-
-      entries.sort((a: any, b: any) => b.rating - a.rating);
-      const cutoffIndex = Math.floor(this.totalPlayers * 0.005);
-      this.gladiatorCutoff = entries[cutoffIndex]?.rating ?? null;
-      console.log(`Cutoff determined from ${this.totalPlayers} players`);
-    },
-    error: (err) => {
-      console.error('Leaderboard fetch failed', err);
-    },
-  });
-}
+    this.cutoffApi.getCutoffs().subscribe((data: CutoffData) => {
+      this.totalPlayers = data.totalPlayers;
+      this.gladiatorCutoff = data.gladiatorCutoff;
+      this.rank1Cutoff = data.rank1Cutoff;
+    });
+  }
 }

@@ -1,11 +1,22 @@
 <h3>Most Popular Gear</h3>
 <table>
   <tr>
+
+
+    <th>Item</th>
+    <th>Count</th>
+  </tr>
+  <tr *ngFor="let item of topGear">
+    <td>{{ item.item }}</td>
+    <td>{{ item.count }}</td>
+
+
     <th>Item ID</th>
     <th>Count</th>
   </tr>
   <tr *ngFor="let item of topGear">
     <td>{{item.itemId}}</td>
     <td>{{item.count}}</td>
+
   </tr>
 </table>
