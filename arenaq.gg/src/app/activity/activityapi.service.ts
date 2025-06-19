@@ -1,34 +1,18 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
+import { WowApiService } from '../wow-api.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class ActivityApiService {
-    private apiUrl = 'https://api.example.com/wow/cataclysm'; // Replace with the actual API URL
+    constructor(private wowApi: WowApiService) { }
 
-    constructor(private http: HttpClient) { }
-
-    getActivities(): Observable<any> {
-        return this.http.get<any>(`${this.apiUrl}/activities`);
-    }
-
-    getActivityById(id: string): Observable<any> {
-        return this.http.get<any>(`${this.apiUrl}/activities/${id}`);
-    }
-
-    createActivity(activity: any): Observable<any> {
-        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-        return this.http.post<any>(`${this.apiUrl}/activities`, activity, { headers });
-    }
-
-    updateActivity(id: string, activity: any): Observable<any> {
-        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-        return this.http.put<any>(`${this.apiUrl}/activities/${id}`, activity, { headers });
-    }
-
-    deleteActivity(id: string): Observable<any> {
-        return this.http.delete<any>(`${this.apiUrl}/activities/${id}`);
+    /** Fetch information about Cataclysm Classic seasons. */
+    getArchives(): Observable<any[]> {
+        return forkJoin([
+            this.wowApi.getSeason(9),
+            this.wowApi.getSeason(10)
+        ]);
     }
 }

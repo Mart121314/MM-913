@@ -1,37 +1,33 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-
-interface Player {
-    name: string;
-    class: string;
-    rating: number;
-}
+import { map, Observable } from 'rxjs';
+import { WowApiService } from '../wow-api.service';
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root',
 })
 export class BisPlayerApiService {
-    private leaderboardUrl = '/assets/leaderboard.json'; // Adjust the path as needed
+  constructor(private wowApi: WowApiService) {}
 
-    constructor(private http: HttpClient) {}
-
-    getHighestRatedPlayers(): Observable<{ [key: string]: Player }> {
-        return this.http.get<Player[]>(this.leaderboardUrl).pipe(
-            map(players => this.findHighestRatedPlayers(players))
-        );
-    }
-
-    private findHighestRatedPlayers(players: Player[]): { [key: string]: Player } {
-        const highestRatedPlayers: { [key: string]: Player } = {};
-
-        players.forEach(player => {
-            if (!highestRatedPlayers[player.class] || player.rating > highestRatedPlayers[player.class].rating) {
-                highestRatedPlayers[player.class] = player;
-            }
+  /**
+   * Return the top players for each class based on the 3v3 ladder.
+   */
+  getTopPlayersByClass(limit: number = 5): Observable<Record<string, any[]>> {
+    return this.wowApi.getFull3v3Ladder(5).pipe(
+      map((players) => {
+        const byClass: Record<string, any[]> = {};
+        players.forEach((p) => {
+          const cls = p.character.playable_class.name;
+          if (!byClass[cls]) {
+            byClass[cls] = [];
+          }
+          byClass[cls].push(p);
         });
-
-        return highestRatedPlayers;
-    }
+        Object.keys(byClass).forEach((cls) => {
+          byClass[cls].sort((a, b) => b.rating - a.rating);
+          byClass[cls] = byClass[cls].slice(0, limit);
+        });
+        return byClass;
+      })
+    );
+  }
 }
