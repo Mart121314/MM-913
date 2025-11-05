@@ -1,22 +1,10 @@
-<h3>Most Popular Gear</h3>
-<table>
-  <tr>
+<div *ngIf="equipment$ | async as eq; else loading">
+  <div *ngIf="eq?.equipped_items?.length; else empty">
+    <div *ngFor="let item of eq.equipped_items">
+      {{ item.name?.display_string }} (ilvl: {{ item.level?.value }})
+    </div>
+  </div>
+</div>
 
-
-    <th>Item</th>
-    <th>Count</th>
-  </tr>
-  <tr *ngFor="let item of topGear">
-    <td>{{ item.item }}</td>
-    <td>{{ item.count }}</td>
-
-
-    <th>Item ID</th>
-    <th>Count</th>
-  </tr>
-  <tr *ngFor="let item of topGear">
-    <td>{{item.itemId}}</td>
-    <td>{{item.count}}</td>
-
-  </tr>
-</table>
+<ng-template #loading>Loading…</ng-template>
+<ng-template #empty>No items found.</ng-template>

@@ -1,18 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
+import { Component, OnInit  } from '@angular/core';
+import { CommonModule} from '@angular/common';
 import { WowApiService } from '../wow-api.service';
-import { BisGearService } from './bis-gear.service';
-import { switchMap } from 'rxjs';
-
-
-import { BisGearService } from './bis-gear.service';
-
-import { WowApiService } from '../wow-api.service';
-import { BisGearService } from './bis-gear.service';
-import { switchMap } from 'rxjs';
-
-
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-bis-gear',
@@ -22,30 +11,11 @@ import { switchMap } from 'rxjs';
   styleUrl: './bis-gear.component.css'
 })
 export class BisGearComponent implements OnInit {
+  equipment$!: Observable<any>;   // <- observable for template
 
-  topGear: { itemId: number; count: number }[] = [];
-
-  constructor(private wowApi: WowApiService, private gearSvc: BisGearService) {}
-
-
-
-  topGear: { item: string; count: number }[] = [];
-
-  constructor(private gearSvc: BisGearService) {}
+  constructor(public topGear: WowApiService) {} // can stay public OR private (not used in template)
 
   ngOnInit(): void {
-    this.gearSvc.getMostPopularGear().subscribe((gear) => {
-      this.topGear = gear.slice(0, 10);
-
-  topGear: { itemId: number; count: number }[] = [];
-
-  constructor(private wowApi: WowApiService, private gearSvc: BisGearService) {}
-
-
-  ngOnInit(): void {
-    this.wowApi
-      .getFull3v3Ladder(5)
-      .pipe(switchMap((players) => this.gearSvc.getMostPopularGear(players)))
-      .subscribe((gear) => (this.topGear = gear.slice(0, 10)));
+    this.equipment$ = this.topGear.getCharacterEquipment('stormscale', 'sippycup', 'eu');
   }
 }

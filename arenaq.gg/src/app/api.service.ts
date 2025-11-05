@@ -7,10 +7,8 @@ import { AuthenticationService } from './authentication.service';
 @Injectable({
   providedIn: 'root',
 })
-export class BaseApiService {
-  constructor(
-    protected http: HttpClient,
-    protected authService: AuthenticationService
+export abstract class BaseApiService {
+  constructor(protected http: HttpClient, protected authService: AuthenticationService
   ) {}
 
   protected getAuthenticatedHeaders(): Observable<HttpHeaders> {

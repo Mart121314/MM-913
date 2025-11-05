@@ -30,4 +30,5 @@ export class PlayerComponent implements OnInit {
       this.equipment = e;
     });
   }
-}
+    )}
+  )}}
