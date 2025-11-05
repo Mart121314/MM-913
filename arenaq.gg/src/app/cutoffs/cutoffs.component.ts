@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { CutoffApiService, CutoffData } from './cutoffapi.service';
 
 @Component({
   selector: 'app-cutoffs',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './cutoffs.component.html',
   styleUrls: ['./cutoffs.component.css'],
 })

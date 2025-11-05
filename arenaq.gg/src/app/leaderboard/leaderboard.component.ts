@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { LeaderboardApiService } from './leaderboardapi.service';
 
 @Component({
   selector: 'app-leaderboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './leaderboard.component.html',
   styleUrl: './leaderboard.component.css'
 })

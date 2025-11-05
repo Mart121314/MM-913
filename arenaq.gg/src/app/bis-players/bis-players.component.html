@@ -1,20 +1,23 @@
-<div *ngFor="let entry of playersByClass | keyvalue">
-
-
-  <h3>{{ entry.key }}</h3>
-  <div *ngFor="let p of entry.value" class="player-block">
-    <strong>{{ p.name }}</strong> - {{ p.rating }}
+@for (entry of playersByClass | keyvalue; track entry) {
+  <div>
+    <h3>{{ entry.key }}</h3>
+    @for (p of entry.value; track p) {
+      <div class="player-block">
+        <strong>{{ p.name }}</strong> - {{ p.rating }}
+        <ul>
+          @for (item of p.gear; track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+      </div>
+    }
+    <h3>{{entry.key}}</h3>
     <ul>
-      <li *ngFor="let item of p.gear">{{ item }}</li>
+      @for (p of entry.value; track p) {
+        <li>
+          {{p.character.name}} - {{p.rating}}
+        </li>
+      }
     </ul>
   </div>
-
-
-  <h3>{{entry.key}}</h3>
-  <ul>
-    <li *ngFor="let p of entry.value">
-      {{p.character.name}} - {{p.rating}}
-    </li>
-  </ul>
-
-</div>
+}

@@ -1,10 +1,18 @@
-<div *ngIf="equipment$ | async as eq; else loading">
-  <div *ngIf="eq?.equipped_items?.length; else empty">
-    <div *ngFor="let item of eq.equipped_items">
-      {{ item.name?.display_string }} (ilvl: {{ item.level?.value }})
-    </div>
+@if (equipment$ | async; as eq) {
+  <div>
+    @if (eq?.equipped_items?.length) {
+      <div>
+        @for (item of eq.equipped_items; track item) {
+          <div>
+            {{ item.name?.display_string }} (ilvl: {{ item.level?.value }})
+          </div>
+        }
+      </div>
+    } @else {
+      No items found.
+    }
   </div>
-</div>
+} @else {
+  Loading…
+}
 
-<ng-template #loading>Loading…</ng-template>
-<ng-template #empty>No items found.</ng-template>

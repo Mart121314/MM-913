@@ -16,7 +16,5 @@ export class LeaderboardApiService {
   getPage(page: number, seasonId = 11): Observable<any[]> {
     return this.wow.getLeaderboardPage(seasonId, page);
 
-
-
   }
 }
