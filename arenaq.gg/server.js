@@ -11,7 +11,6 @@ const PORT = process.env.PORT || 3000;
 // CORS for Angular frontend (reflect requesting origin for dev/prod)
 const corsOptions = { origin: true };
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
 
 // Serve Angular static files (built with `ng build --configuration production`)
 const angularDistPath = path.join(__dirname, 'dist/arenaq.gg');
@@ -42,7 +41,7 @@ app.get('/api/token', async (req, res) => {
 
 // Fallback route to Angular's index.html for SPA support
 const indexPath = path.join(angularDistPath, 'index.html');
-app.get('*', (req, res) => {
+app.get('/*', (req, res) => {
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
