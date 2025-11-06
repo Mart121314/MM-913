@@ -1,6 +1,270 @@
 .cutoff-container {
-  background-color: #1e1e1e;
-  padding: 16px;
-  border-radius: 8px;
-  color: white;
+  width: min(960px, 100%);
+  margin: 32px auto;
+  padding: 24px;
+  background: radial-gradient(circle at top, rgba(38, 38, 38, 0.7), rgba(12, 12, 12, 0.9));
+  border: 1px solid rgba(255, 45, 45, 0.35);
+  border-radius: 28px;
+  color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 28px;
+}
+
+.bracket-selector {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.bracket-selector button {
+  background: #1a1a1a;
+  border: 1px solid #2d2d2d;
+  color: #f3f4f6;
+  padding: 12px 28px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.bracket-selector button:hover,
+.bracket-selector button.active {
+  border-color: #ff3b30;
+  color: #ff3b30;
+  transform: translateY(-1px);
+}
+
+.cutoff-panel {
+  background: linear-gradient(155deg, rgba(26, 26, 26, 0.95), rgba(10, 10, 12, 0.92));
+  border: 1px solid rgba(255, 45, 45, 0.28);
+  border-radius: 24px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-end;
+  border-bottom: 1px solid rgba(255, 45, 45, 0.4);
+  padding-bottom: 18px;
+}
+
+.panel-header h2 {
+  font-size: 1.75rem;
+  margin: 0;
+  color: #ffffff;
+}
+
+.panel-header h2 small {
+  display: block;
+  font-size: 0.9rem;
+  color: #d1d6ec;
+  margin-top: 4px;
+}
+
+.panel-meta {
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+  color: #d4d7e8;
+}
+
+.panel-total {
+  background: linear-gradient(120deg, rgba(255, 59, 48, 0.18), rgba(255, 59, 48, 0.07));
+  border: 1px solid rgba(255, 59, 48, 0.55);
+  border-radius: 14px;
+  padding: 14px 24px;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+
+.panel-total span {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.panel-total strong {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.cutoff-card {
+  border-radius: 18px;
+  padding: 22px 26px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  color: #fdfdfd;
+}
+
+.cutoff-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.cutoff-card .badge {
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  font-size: 0.75rem;
+}
+
+.cutoff-card .spots {
+  font-size: 0.85rem;
+  opacity: 0.92;
+}
+
+.cutoff-card .metric {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  z-index: 1;
+}
+
+.cutoff-card .metric .rating {
+  font-size: 2.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cutoff-card .metric .label {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+}
+
+.cutoff-card.rank1 {
+  background: linear-gradient(135deg, rgba(255, 72, 0, 0.92), rgba(255, 140, 66, 0.85));
+  border: 1px solid rgba(255, 90, 0, 0.75);
+  color: #1b0a03;
+}
+
+.cutoff-card.gladiator {
+  background: linear-gradient(135deg, rgba(115, 76, 196, 0.92), rgba(91, 46, 175, 0.88));
+  border: 1px solid rgba(168, 85, 247, 0.55);
+  color: #f6f4ff;
+}
+
+.cutoff-chart {
+  background: linear-gradient(165deg, rgba(22, 22, 22, 0.96), rgba(10, 10, 12, 0.92));
+  border-radius: 20px;
+  border: 1px solid rgba(255, 59, 48, 0.2);
+  padding: 14px 16px 30px;
+}
+
+.cutoff-chart svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.cutoff-chart .grid-line {
+  stroke: rgba(255, 59, 48, 0.18);
+  stroke-dasharray: 4 6;
+}
+
+.cutoff-chart text {
+  fill: rgba(229, 231, 235, 0.8);
+  font-size: 0.75rem;
+  text-anchor: middle;
+}
+
+.cutoff-chart .axis text {
+  text-anchor: middle;
+}
+.cutoff-chart .axis.axis-x text {
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+
+.cutoff-chart .axis line {
+  stroke: rgba(255, 59, 48, 0.3);
+}
+
+.cutoff-chart .line {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cutoff-chart .line.rank1 {
+  stroke: #f97316;
+}
+
+.cutoff-chart .line.gladiator {
+  stroke: #a855f7;
+}
+
+.cutoff-chart .points circle {
+  stroke: rgba(0, 0, 0, 0.7);
+  stroke-width: 2;
+}
+
+.cutoff-chart .points.rank1 circle {
+  fill: #ff7c27;
+}
+
+.cutoff-chart .points.gladiator circle {
+  fill: #c084fc;
+}
+
+.cutoff-status {
+  text-align: center;
+  padding: 48px 20px;
+  color: #cbd5f5;
+  font-size: 1.05rem;
+}
+
+.cutoff-status.error {
+  color: #ff6b6b;
+}
+
+@media (max-width: 720px) {
+  .cutoff-container {
+    padding: 18px;
+  }
+
+  .cutoff-panel {
+    padding: 24px;
+  }
+
+  .panel-header {
+    align-items: flex-start;
+  }
+
+  .panel-total {
+    width: 100%;
+    text-align: left;
+  }
+
+  .cutoff-card .metric .rating {
+    font-size: 2.2rem;
+  }
 }

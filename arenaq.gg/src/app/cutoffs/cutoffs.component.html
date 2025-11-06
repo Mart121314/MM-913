@@ -1,9 +1,147 @@
-<div class="cutoff-container" *ngIf="gladiatorCutoff !== null">
-  <h2>Season 11 Cutoffs</h2>
-  <p>Total Players: {{ totalPlayers }}</p>
-  <p>Rank 1 Title: <strong>{{ rank1Cutoff }}</strong> Rating</p>
-  <p>Gladiator: <strong>{{ gladiatorCutoff }}</strong> Rating</p>
-</div>
-<div *ngIf="gladiatorCutoff === null">
-  <p>Loading cutoff data or API unavailable...</p>
+<div class="cutoff-container">
+  <div class="bracket-selector">
+    @for (bracket of brackets; track bracket) {
+      <button
+        type="button"
+        (click)="setBracket(bracket)"
+        [class.active]="bracket === currentBracket"
+      >
+        {{ bracket.toUpperCase() }}
+      </button>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="cutoff-status">
+      <p>Loading cutoff data...</p>
+    </div>
+  } @else if (error) {
+    <div class="cutoff-status error">
+      <p>{{ error }}</p>
+    </div>
+  } @else if (totalPlayers > 0) {
+    <section class="cutoff-panel">
+      <header class="panel-header">
+        <div>
+          <h2>
+            Season {{ currentSeason ?? 'latest' }} Cutoffs
+            <small>({{ currentRegion.toUpperCase() }} · {{ currentBracket.toUpperCase() }})</small>
+          </h2>
+          <p class="panel-meta">
+            Season start:
+            <strong>{{ seasonStartDisplay | date: 'MMM d, y' }}</strong>
+            · Last updated:
+            <strong>{{ lastUpdated | date: 'MMM d, y' }}</strong>
+          </p>
+        </div>
+        <div class="panel-total">
+          <span>Total Players</span>
+          <strong>{{ totalPlayers | number }}</strong>
+        </div>
+      </header>
+
+      <div class="card-grid">
+        <article class="cutoff-card rank1">
+          <header>
+            <span class="badge">Rank 1</span>
+            <span class="spots">{{ rank1Spots | number }} spots</span>
+          </header>
+          <div class="metric">
+            <span class="rating">{{ rank1Cutoff }}</span>
+            <span class="label">rating cutoff</span>
+          </div>
+        </article>
+
+        <article class="cutoff-card gladiator">
+          <header>
+            <span class="badge">Gladiator</span>
+            <span class="spots">{{ gladiatorSpots | number }} spots</span>
+          </header>
+          <div class="metric">
+            <span class="rating">{{ gladiatorCutoff }}</span>
+            <span class="label">rating cutoff</span>
+          </div>
+        </article>
+      </div>
+
+      @if (chartReady) {
+        <div class="cutoff-chart" role="img" aria-label="Rating trend for Rank 1 and Gladiator">
+          <svg
+            [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+            focusable="false"
+            aria-hidden="true"
+          >
+            <g class="grid-lines">
+              @for (tick of yAxisTicks; track tick.y) {
+                <line
+                  class="grid-line"
+                  [attr.x1]="chartPadding"
+                  [attr.x2]="chartWidth - chartPadding"
+                  [attr.y1]="tick.y"
+                  [attr.y2]="tick.y"
+                />
+                <text [attr.x]="chartPadding - 12" [attr.y]="tick.y + 4">{{ tick.label }}</text>
+              }
+            </g>
+
+            <g class="axis axis-x">
+              @for (tick of xAxisTicks; track tick.x) {
+                <line
+                  [attr.x1]="tick.x"
+                  [attr.x2]="tick.x"
+                  [attr.y1]="chartHeight - chartPadding"
+                  [attr.y2]="chartHeight - chartPadding + 6"
+                />
+                <text
+                  [attr.x]="tick.x"
+                  [attr.y]="chartHeight - chartPadding + 22"
+                  text-anchor="end"
+                  [attr.transform]="
+                    'rotate(-32 ' +
+                    tick.x +
+                    ' ' +
+                    (chartHeight - chartPadding + 22) +
+                    ')'
+                  "
+                >
+                  {{ tick.label }}
+                </text>
+              }
+            </g>
+
+            <path class="line gladiator" [attr.d]="gladiatorPath" />
+            <path class="line rank1" [attr.d]="rank1Path" />
+
+            <g class="points gladiator">
+              @for (point of gladiatorRenderPoints; track point.x) {
+                <circle
+                  [attr.cx]="point.x"
+                  [attr.cy]="point.y"
+                  r="4"
+                >
+                  <title>{{ point.label }} · {{ point.value }}</title>
+                </circle>
+              }
+            </g>
+
+            <g class="points rank1">
+              @for (point of rank1RenderPoints; track point.x) {
+                <circle
+                  [attr.cx]="point.x"
+                  [attr.cy]="point.y"
+                  r="4"
+                >
+                  <title>{{ point.label }} · {{ point.value }}</title>
+                </circle>
+              }
+            </g>
+          </svg>
+        </div>
+      }
+    </section>
+  } @else {
+    <div class="cutoff-status">
+      <p>No cutoff data available.</p>
+    </div>
+  }
 </div>

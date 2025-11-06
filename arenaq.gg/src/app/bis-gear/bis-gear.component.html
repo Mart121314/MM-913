@@ -4,19 +4,28 @@
   <div class="error">{{ error }}</div>
 }
 
-@if (gear$ | async; as gear) {
-  @if (gear.length) {
+@if (vm$ | async; as vm) {
+  <p class="filters">
+    Showing
+    <strong>{{ vm.filters.classSlug ?? 'all classes' }}</strong> |
+    <strong>{{ vm.filters.specSlug ?? 'all specs' }}</strong> |
+    <strong>{{ vm.filters.slot ?? 'all slots' }}</strong>
+  </p>
+
+  @if (vm.items.length) {
     <table>
       <thead>
         <tr>
           <th>Item</th>
+          <th>Slot</th>
           <th>Count</th>
         </tr>
       </thead>
       <tbody>
-        @for (entry of gear; track entry.item) {
+        @for (entry of vm.items; track entry.item + entry.slot) {
           <tr>
             <td>{{ entry.item }}</td>
+            <td>{{ entry.slot }}</td>
             <td>{{ entry.count }}</td>
           </tr>
         }

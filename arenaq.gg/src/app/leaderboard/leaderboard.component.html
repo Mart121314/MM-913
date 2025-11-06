@@ -1,13 +1,26 @@
 <section class="controls">
-  <button type="button" (click)="setRegion('eu')" [disabled]="region === 'eu'">EU</button>
-  <button type="button" (click)="setRegion('us')" [disabled]="region === 'us'">US</button>
+  <div class="region-controls">
+    <button type="button" (click)="setRegion('eu')" [disabled]="region === 'eu'">EU</button>
+    <button type="button" (click)="setRegion('us')" [disabled]="region === 'us'">US</button>
+  </div>
+  <div class="bracket-controls">
+    @for (option of brackets; track option) {
+      <button
+        type="button"
+        (click)="setBracket(option)"
+        [class.active]="option === bracket"
+      >
+        {{ option.toUpperCase() }}
+      </button>
+    }
+  </div>
 </section>
 
 @if (loading) {
-  <div>Loading leaderboard...</div>
+  <div class="status">Loading leaderboard...</div>
 } @else if (error) {
   <div class="error">{{ error }}</div>
-} @else {
+} @else if (rows.length) {
   <table>
     <thead>
       <tr>
@@ -38,10 +51,15 @@
       }
     </tbody>
   </table>
+} @else {
+  <div class="status">No results for this bracket yet.</div>
 }
 
 <div class="pager">
   <button type="button" (click)="loadPage(currentPage - 1)" [disabled]="currentPage <= 1">Prev</button>
-  <span>Page {{ currentPage }}</span>
-  <button type="button" (click)="loadPage(currentPage + 1)">Next</button>
+  <span>Page {{ currentPage }} / {{ totalPages }}</span>
+  <span class="total">Showing {{ rows.length }} of {{ totalEntries }} entries</span>
+  <button type="button" (click)="loadPage(currentPage + 1)" [disabled]="currentPage >= totalPages">
+    Next
+  </button>
 </div>

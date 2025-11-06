@@ -4,9 +4,13 @@
   <div class="error">{{ error }}</div>
 }
 
-@if (players$ | async; as groups) {
-  @if (groups.length) {
-    @for (group of groups; track group.classId) {
+@if (vm$ | async; as vm) {
+  <p class="filters">
+    Showing <strong>{{ vm.filters.classSlug ?? 'all classes' }}</strong>
+  </p>
+
+  @if (vm.groups.length) {
+    @for (group of vm.groups; track group.classId) {
       <section class="class-block">
         <h4>{{ group.className }}</h4>
         <ul>
@@ -14,7 +18,7 @@
             <li>
               {{ player?.character?.name ?? 'Unknown' }}
               <span>({{ player?.character?.realm?.slug ?? '?' }})</span>
-              <span>– {{ player?.rating ?? '-' }} rating</span>
+              <span>- {{ player?.rating ?? '-' }} rating</span>
             </li>
           }
         </ul>

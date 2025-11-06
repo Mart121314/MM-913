@@ -38,6 +38,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./tracker/tracker.component').then(m => m.TrackerComponent),
   },
+  { path: 'character/:region/:realm/:name', component: PlayerComponent },
   { path: 'player/:region/:realm/:name', component: PlayerComponent },
   { path: '**', redirectTo: 'leaderboard' },
 ];
