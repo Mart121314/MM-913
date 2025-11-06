@@ -1,32 +1,134 @@
-<h3>Top Players by Class</h3>
+<section class="bis-players-container">
+  <header class="bis-header">
+    <div>
+      <h1>Best Players</h1>
+      <p class="subtitle">
+        Check out the best players currently playing in the leaderboard. Choose a class icon to inspect the top 50 rated players gathered from the {{ defaultRegion.toUpperCase() }} ladders.
+      </p>
+    </div>
+  </header>
 
-@if (error) {
-  <div class="error">{{ error }}</div>
-}
-
-@if (vm$ | async; as vm) {
-  <p class="filters">
-    Showing <strong>{{ vm.filters.classSlug ?? 'all classes' }}</strong>
-  </p>
-
-  @if (vm.groups.length) {
-    @for (group of vm.groups; track group.classId) {
-      <section class="class-block">
-        <h4>{{ group.className }}</h4>
-        <ul>
-          @for (player of group.players; track player?.character?.id ?? player?.character?.name ?? player?.name) {
-            <li>
-              {{ player?.character?.name ?? 'Unknown' }}
-              <span>({{ player?.character?.realm?.slug ?? '?' }})</span>
-              <span>- {{ player?.rating ?? '-' }} rating</span>
-            </li>
-          }
-        </ul>
-      </section>
+  <div class="class-selector">
+    @for (option of classOptions; track option.slug) {
+      <button
+        type="button"
+        class="class-chip"
+        [class.active]="(selectedClass$ | async) === option.slug"
+        (click)="onSelectClass(option.slug)"
+      >
+        <img
+          class="class-icon"
+          [src]="getClassIcon(option.slug)"
+          [alt]="option.name"
+          (error)="onIconError($event)"
+          loading="lazy"
+        />
+        <span>{{ option.name }}</span>
+      </button>
     }
-  } @else if (!error) {
-    <div>No player data available.</div>
+  </div>
+
+  @if (vm$ | async; as vm) {
+    @if (vm.specs.length) {
+      <div class="spec-filter">
+        <button
+          type="button"
+          class="spec-chip"
+          [class.active]="!vm.activeSpec"
+          (click)="onSelectSpec(null)"
+        >
+          All Specs
+        </button>
+        @for (spec of vm.specs; track spec.value) {
+          <button
+            type="button"
+            class="spec-chip"
+            [class.active]="vm.activeSpec === spec.value"
+            (click)="onSelectSpec(spec.value)"
+          >
+            {{ spec.label }}
+          </button>
+        }
+      </div>
+    }
+
+    <div class="table-meta">
+      <span class="pill">{{ vm.className }}</span>
+      <span class="pill">Region &middot; {{ vm.regionLabel }}</span>
+      @if (vm.generatedAt) {
+        <span class="timestamp">
+          Updated {{ vm.generatedAt | date: 'medium' }}
+        </span>
+      }
+    </div>
+
+    <div class="table-wrapper" tabindex="0">
+      <table class="bis-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Region</th>
+            <th>Details</th>
+            <th>Name</th>
+            <th>Realm</th>
+            <th>2v2</th>
+            <th>3v3</th>
+            <th>5v5</th>
+            <th>RBG</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (vm.entries.length) {
+            @for (player of vm.entries; track trackPlayer($index, player)) {
+              <tr>
+                <td class="rank">{{ player.rank }}</td>
+                <td>{{ player.region }}</td>
+                <td class="details">
+                  <span class="detail-line">
+                    {{ player.race || '?' }} {{ player.className }}
+                  </span>
+                  @if (player.spec) {
+                    <span class="detail-spec">{{ player.spec }}</span>
+                  }
+                </td>
+                <td class="player-name">
+                  <a
+                    [routerLink]="[
+                      '/player',
+                      defaultRegion,
+                      player.realmSlug,
+                      player.routeName
+                    ]"
+                    [queryParams]="{
+                      rating: player.ratings['3v3'] ?? undefined,
+                      class: player.className,
+                      race: player.race,
+                      spec: player.spec,
+                      bracket: '3v3',
+                      realmName: player.realm
+                    }"
+                  >
+                    {{ player.name }}
+                  </a>
+                </td>
+                <td>{{ player.realm }}</td>
+                <td>{{ formatRating(player.ratings['2v2']) }}</td>
+                <td>{{ formatRating(player.ratings['3v3']) }}</td>
+                <td>{{ formatRating(player.ratings['5v5']) }}</td>
+                <td>{{ formatRating(player.ratings['rbg']) }}</td>
+              </tr>
+            }
+          } @else {
+            <tr>
+              <td colspan="9" class="empty">
+                No tracked players for this class yet.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <div class="status">Loading class leaderboard...</div>
   }
-} @else if (!error) {
-  <div>Loading players...</div>
-}
+</section>

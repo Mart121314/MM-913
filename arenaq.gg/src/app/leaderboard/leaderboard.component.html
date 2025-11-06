@@ -21,32 +21,72 @@
 } @else if (error) {
   <div class="error">{{ error }}</div>
 } @else if (rows.length) {
-  <table>
+  <table class="leaderboard-table">
     <thead>
       <tr>
-        <th>Rank</th>
-        <th>Name</th>
-        <th>Realm</th>
-        <th>Class</th>
-        <th>Wins</th>
-        <th>Losses</th>
-        <th>Rating</th>
+        <th class="col-rank">#</th>
+        <th class="col-player">Player</th>
+        <th class="col-realm">Realm</th>
+        <th class="col-record">Record</th>
+        <th class="col-rating">Rating</th>
       </tr>
     </thead>
     <tbody>
       @for (row of rows; track trackByRow($index, row)) {
         <tr>
-          <td>{{ row.rank ?? '-' }}</td>
-          <td>{{ row.name }}</td>
-          <td>{{ row.realm || '-' }}</td>
-          <td>{{ row.className }}</td>
-          <td>{{ row.wins ?? '-' }}</td>
-          <td>{{ row.losses ?? '-' }}</td>
-          <td>{{ row.rating ?? '-' }}</td>
+          <td class="rank-cell">#{{ row.rank ?? '-' }}</td>
+          <td class="player-cell">
+            <div class="player-stack">
+              <img
+                class="class-icon"
+                [src]="classIcon(row)"
+                [alt]="row.className"
+                (error)="onIconError($event)"
+                loading="lazy"
+              />
+              <div class="player-meta">
+                <a
+                  class="player-name"
+                  [routerLink]="[
+                    '/player',
+                    region,
+                    row.realmSlug,
+                    row.routeName
+                  ]"
+                  [queryParams]="{
+                    rating: row.rating ?? undefined,
+                    class: row.className,
+                    race: row.race ?? undefined,
+                    spec: row.specName ?? undefined,
+                    bracket: bracket,
+                    realmName: row.realmName,
+                    wins: row.wins ?? undefined,
+                    losses: row.losses ?? undefined
+                  }"
+                >
+                  {{ row.name }}
+                </a>
+                <span class="player-spec">
+                  {{ row.specName ?? row.className }}
+                </span>
+              </div>
+            </div>
+          </td>
+          <td class="realm-cell">
+            <span [class]="realmClass(row)">
+              {{ row.realmName }}
+            </span>
+          </td>
+          <td class="record-cell">
+            <span class="wins">{{ record(row, 'wins') }}</span>
+            <span class="divider">/</span>
+            <span class="losses">{{ record(row, 'losses') }}</span>
+          </td>
+          <td class="rating-cell">{{ row.rating ?? '-' }}</td>
         </tr>
       } @empty {
         <tr>
-          <td colspan="7">No results.</td>
+          <td colspan="5" class="empty-cell">No results.</td>
         </tr>
       }
     </tbody>

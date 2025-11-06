@@ -189,12 +189,46 @@ export class WowApiService extends BaseApiService {
     );
   }
 
+  getCharacterSpecializations(
+    realmSlug: string,
+    characterName: string,
+    region: Region = 'eu'
+  ): Observable<any> {
+    const realm = encodeURIComponent(realmSlug.toLowerCase());
+    const name = encodeURIComponent(characterName.toLowerCase());
+    return this.getAuthenticatedHeaders().pipe(
+      switchMap(headers => {
+        const url =
+          `https://${this.host(region)}/profile/wow/character/${realm}/${name}/specializations` +
+          `?namespace=${this.nsProfile(region)}&locale=en_GB`;
+        return this.http.get<any>(url, { headers });
+      })
+    );
+  }
+
   getSeason(seasonId: number, region: Region = 'eu'): Observable<any> {
     return this.getAuthenticatedHeaders().pipe(
       switchMap(headers => {
         const url =
           `https://${this.host(region)}/data/wow/pvp-season/${seasonId}` +
           `?namespace=${this.nsDynamic(region)}&locale=en_GB`;
+        return this.http.get<any>(url, { headers });
+      })
+    );
+  }
+
+  getCharacterSummary(
+    realmSlug: string,
+    characterName: string,
+    region: Region = 'eu'
+  ): Observable<any> {
+    const realm = encodeURIComponent(realmSlug.toLowerCase());
+    const name = encodeURIComponent(characterName.toLowerCase());
+    return this.getAuthenticatedHeaders().pipe(
+      switchMap(headers => {
+        const url =
+          `https://${this.host(region)}/profile/wow/character/${realm}/${name}` +
+          `?namespace=${this.nsProfile(region)}&locale=en_GB`;
         return this.http.get<any>(url, { headers });
       })
     );

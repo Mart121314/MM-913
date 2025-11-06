@@ -6,7 +6,10 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "tracker:update": "node scripts/update-tracker.js",
+    "bis:update": "node scripts/update-bis-top.js",
+    "leaderboard:update": "node scripts/update-leaderboard.js"
   },
   "private": true,
   "dependencies": {

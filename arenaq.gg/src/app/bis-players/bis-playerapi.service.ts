@@ -1,83 +1,102 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
-import { WowApiService, Region } from '../wow-api.service';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { catchError, map, shareReplay } from 'rxjs/operators';
+import { Region } from '../wow-api.service';
 
-export interface TopByClass {
-  classId: number;
-  className: string;
-  players: any[];
+export type BisBracket = '2v2' | '3v3' | '5v5' | 'rbg';
+
+export const BIS_CLASS_META = [
+  { id: 6, name: 'Death Knight', slug: 'death-knight' },
+  { id: 11, name: 'Druid', slug: 'druid' },
+  { id: 3, name: 'Hunter', slug: 'hunter' },
+  { id: 8, name: 'Mage', slug: 'mage' },
+  { id: 10, name: 'Monk', slug: 'monk' },
+  { id: 2, name: 'Paladin', slug: 'paladin' },
+  { id: 5, name: 'Priest', slug: 'priest' },
+  { id: 4, name: 'Rogue', slug: 'rogue' },
+  { id: 7, name: 'Shaman', slug: 'shaman' },
+  { id: 9, name: 'Warlock', slug: 'warlock' },
+  { id: 1, name: 'Warrior', slug: 'warrior' },
+] as const;
+
+export type BisClassSlug = (typeof BIS_CLASS_META)[number]['slug'];
+
+export interface BisTopSnapshot {
+  generatedAt: string;
+  regions: Record<string, BisRegionSnapshot | undefined>;
 }
 
-export interface TopPlayersOptions {
-  seasonId?: number;
+export interface BisRegionSnapshot {
+  seasonId: number;
+  generatedAt: string;
+  classes: Record<string, BisTopEntry[] | undefined>;
+}
+
+export interface BisTopEntry {
+  id: number;
+  rank: number;
+  region: string;
+  classId: number;
+  className: string;
+  classSlug: BisClassSlug;
+  spec: string;
+  race: string;
+  faction: string;
+  detailsKey: string;
+  name: string;
+  routeName: string;
+  realm: string;
+  realmSlug: string;
+  ratings: Record<BisBracket, number | null>;
+  ranks: Record<BisBracket, number | null>;
+}
+
+export interface GetClassOptions {
+  classSlug: BisClassSlug;
   region?: Region;
-  maxPages?: number;
-  topNPerClass?: number;
-  classSlug?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class BisPlayerApiService {
-  constructor(private wow: WowApiService) {}
+  private snapshot$?: Observable<BisTopSnapshot>;
 
-  getTopPlayersByClass(options: TopPlayersOptions = {}): Observable<TopByClass[]> {
-    const {
-      seasonId,
-      region = 'eu',
-      maxPages = 10,
-      topNPerClass = 5,
-      classSlug,
-    } = options;
+  constructor(private http: HttpClient) {}
 
-    const normalizedClass = classSlug?.toLowerCase() ?? null;
-
-    return this.wow.resolveClassicSeasonId(seasonId, region).pipe(
-      switchMap(resolvedSeason =>
-        this.wow.getFull3v3LadderAuto(resolvedSeason, region, maxPages)
-      ),
-      map(entries => {
-        if (!entries?.length) {
-          return [];
-        }
-
-        const sorted = [...entries].sort(
-          (a, b) => (b?.rating ?? 0) - (a?.rating ?? 0)
+  private loadSnapshot(): Observable<BisTopSnapshot> {
+    if (!this.snapshot$) {
+      this.snapshot$ = this.http
+        .get<BisTopSnapshot>('/api/bis-top')
+        .pipe(
+          catchError(() =>
+            of({
+              generatedAt: '',
+              regions: {},
+            } satisfies BisTopSnapshot)
+          ),
+          shareReplay(1)
         );
+    }
+    return this.snapshot$;
+  }
 
-        const grouped = new Map<number, { className: string; classSlug: string; players: any[] }>();
+  getSnapshot(): Observable<BisTopSnapshot> {
+    return this.loadSnapshot();
+  }
 
-        for (const player of sorted) {
-          const classId = player?.character?.playable_class?.id;
-          const className = String(player?.character?.playable_class?.name ?? 'Unknown');
-          if (!classId) {
-            continue;
-          }
+  getClassMeta(): typeof BIS_CLASS_META {
+    return BIS_CLASS_META;
+  }
 
-          const classSlugValue = className.toLowerCase();
+  getDefaultClass(): BisClassSlug {
+    return BIS_CLASS_META[0]?.slug ?? 'death-knight';
+  }
 
-          if (normalizedClass && classSlugValue !== normalizedClass) {
-            continue;
-          }
-
-          if (!grouped.has(classId)) {
-            grouped.set(classId, { className, classSlug: classSlugValue, players: [] });
-          }
-
-          const bucket = grouped.get(classId)!;
-          if (bucket.players.length < topNPerClass) {
-            bucket.players.push(player);
-          }
-        }
-
-        return Array.from(grouped.entries())
-          .map(([classId, { className, players }]) => ({
-            classId,
-            className,
-            players,
-          }))
-          .sort((a, b) => a.classId - b.classId);
-      })
+  getTopPlayersByClass(options: GetClassOptions): Observable<BisTopEntry[]> {
+    const region = options.region ?? 'eu';
+    const classSlug = options.classSlug;
+    return this.loadSnapshot().pipe(
+      map(snapshot => snapshot.regions[region]?.classes[classSlug] ?? []),
     );
   }
 }

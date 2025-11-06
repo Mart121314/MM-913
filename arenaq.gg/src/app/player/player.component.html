@@ -1,22 +1,168 @@
-<h3>Player Equipment</h3>
-
-@if (error) {
-  <div class="error">{{ error }}</div>
-}
-
-@if (equipment$ | async; as equipment) {
-  @if (equipment?.equipped_items?.length) {
-    <ul>
-      @for (item of equipment.equipped_items; track item?.item?.id) {
-        <li>
-          {{ item?.name?.display_string ?? item?.item?.name ?? 'Unknown item' }}
-          <span>— ilvl {{ item?.level?.value ?? '-' }}</span>
-        </li>
-      }
-    </ul>
-  } @else if (!error) {
-    <div>No equipment found for this character.</div>
+<section class="player-profile-container">
+  @if (error) {
+    <div class="status error">{{ error }}</div>
   }
-} @else if (!error) {
-  <div>Loading equipment…</div>
-}
+
+  @if (profile$ | async; as profile) {
+    @let cutoffs = (cutoffs$ | async);
+    @let talents = (talents$ | async);
+
+    @if (profile) {
+      <header
+        class="profile-header"
+        [style.--class-color]="classColor(profile)"
+      >
+        <div class="header-main">
+          <h1 [style.color]="classColor(profile)">
+            {{ profile.summary?.name ?? 'Unknown Adventurer' }}
+          </h1>
+          <div class="subtitle">
+            <span class="realm">
+              {{ profile.summary?.realm?.name?.en_GB ??
+                 profile.summary?.realm?.name ??
+                 routeExtras?.realmName ??
+                 'Unknown realm' }}
+            </span>
+            <span class="divider">•</span>
+            <span class="class">
+              {{ profile.summary?.character_class?.name?.en_GB ??
+                 profile.summary?.character_class?.name ??
+                 routeExtras?.className ??
+                 'Unknown class' }}
+            </span>
+            @if (profile.summary?.active_spec?.name ?? routeExtras?.spec) {
+              <span class="divider">•</span>
+              <span class="spec">
+                {{ profile.summary?.active_spec?.name ?? routeExtras?.spec }}
+              </span>
+            }
+          </div>
+
+          @if (routeExtras?.rating != null) {
+            <div class="rating-row">
+              <span [class]="ratingClass(cutoffs, routeExtras?.rating ?? null)">
+                {{ routeExtras?.rating }} rating
+              </span>
+              @if (hasRecord()) {
+                <span class="record">
+                  <span class="wins">{{ routeExtras?.wins ?? 0 }}W</span>
+                  <span class="divider">/</span>
+                  <span class="losses">{{ routeExtras?.losses ?? 0 }}L</span>
+                </span>
+              }
+              @if (routeExtras?.bracket) {
+                <span class="badge bracket">
+                  {{ routeExtras?.bracket?.toUpperCase() }}
+                </span>
+              }
+            </div>
+          }
+          @if (cutoffs?.rank1 || cutoffs?.gladiator) {
+            <div class="cutoff-hints">
+              @if (cutoffs?.rank1) {
+                <span class="hint rank1">Rank 1: {{ cutoffs?.rank1 }}</span>
+              }
+              @if (cutoffs?.gladiator) {
+                <span class="hint gladiator">Gladiator: {{ cutoffs?.gladiator }}</span>
+              }
+            </div>
+          }
+          @if (routeExtras?.hidden) {
+            <p class="meta notice">
+              Character profile is hidden; displaying ladder snapshot details only.
+            </p>
+          }
+        </div>
+      </header>
+
+      <div class="profile-grid">
+        <section class="profile-card detail-card">
+          <h2>Character Details</h2>
+          <ul>
+            <li>
+              <span class="label">Level</span>
+              <span>{{ profile.summary?.level ?? '-' }}</span>
+            </li>
+            <li>
+              <span class="label">Race</span>
+              <span>{{ profile.summary?.race?.name?.en_GB ?? profile.summary?.race?.name ?? routeExtras?.race ?? '-' }}</span>
+            </li>
+            <li>
+              <span class="label">Faction</span>
+              <span>{{ profile.summary?.faction?.name?.en_GB ?? profile.summary?.faction?.name ?? '-' }}</span>
+            </li>
+            <li>
+              <span class="label">Last Login</span>
+              <span>{{ profile.summary?.last_login_timestamp | date:'medium' }}</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="profile-card equipment-card">
+          <h2>Equipped Items</h2>
+          @if (profile.equipment?.equipped_items?.length) {
+            <ul>
+              @for (item of profile.equipment.equipped_items; track item?.item?.id ?? item?.name?.display_string) {
+                <li>
+                  <div class="item-name">
+                    {{ item?.name?.display_string ?? item?.item?.name ?? 'Unknown item' }}
+                  </div>
+                  <div class="item-meta">
+                    <span>Slot: {{ item?.slot?.type ?? '-' }}</span>
+                    <span>ilvl {{ item?.level?.value ?? '-' }}</span>
+                  </div>
+                </li>
+              }
+            </ul>
+          } @else {
+            <div class="empty">No equipment data available for this character.</div>
+          }
+        </section>
+      </div>
+
+      <section class="profile-card talents-card">
+        <h2>Talent Setup</h2>
+        @if (talents?.length) {
+          <div class="talent-groups">
+            @for (group of talents; track group.name) {
+              <article class="talent-group" [class.active]="group.isActive">
+                <header>
+                  <h3>{{ group.name }}</h3>
+                  @if (group.isActive) {
+                    <span class="badge active">Active</span>
+                  }
+                </header>
+                @if (group.talents.length) {
+                  <ul class="talent-list">
+                    @for (talent of group.talents; track trackTalent($index, talent)) {
+                      <li>
+                        <span class="talent-name">{{ talent.name }}</span>
+                        @if (talent.description) {
+                          <span class="talent-desc" [innerHTML]="talent.description"></span>
+                        }
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <div class="empty">No talents recorded.</div>
+                }
+                @if (group.glyphs.length) {
+                  <div class="glyphs">
+                    <span class="glyph-label">Glyphs:</span>
+                    <span class="glyph-list">{{ group.glyphs.join(', ') }}</span>
+                  </div>
+                }
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="empty">Talent data not available.</div>
+        }
+      </section>
+    } @else if (!error) {
+      <div class="status">Character not found.</div>
+    }
+  } @else if (!error) {
+    <div class="status">Loading character profile.</div>
+  }
+</section>
