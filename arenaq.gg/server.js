@@ -10,9 +10,11 @@ const {
   updateTrackerForRegion,
   getCachedTrackerSnapshot,
 } = require('./tracker-snapshot');
+
+
 const { OUTPUT_PATH: BIS_TOP_PATH } = require('./bis-top-snapshot');
 const { OUTPUT_PATH: LEADERBOARD_PATH } = require('./leaderboard-snapshot');
-const browserDistFolder = join(import.meta.dirname, '../browser');
+const browserDistFolder = join(import.meta.dirname, '../dist/arenaq.gg/browser');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -20,6 +22,9 @@ const PORT = process.env.PORT || 3000;
 const corsOptions = { origin: true };
 app.use(cors(corsOptions));
 
+app.use(express.static(angularDistPath));
+
+app.get('*', (req, res) => res.sendFile(indexPath));
 // Serve Angular static files (built with `ng build --configuration production`)
 const angularDistPath = path.join(__dirname, 'dist/arenaq.gg');
 app.use(express.static(angularDistPath));
