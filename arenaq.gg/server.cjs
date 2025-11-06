@@ -20,6 +20,7 @@ const PORT = process.env.PORT || 3000;
 
 // CORS
 app.use(cors({ origin: true }));
+app.get('*', handler)
 
 // ✅ Serve Angular browser bundle
 const angularDistPath = path.join(__dirname, 'dist', 'arenaq.gg', 'browser');
