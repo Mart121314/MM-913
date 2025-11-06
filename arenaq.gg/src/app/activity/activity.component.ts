@@ -7,7 +7,7 @@ import { ActivityApiService } from './activityapi.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './activity.component.html',
-  styleUrl: './activity.component.css'
+  styleUrls: ['./activity.component.css']
 })
 export class ActivityComponent implements OnInit {
   archives: any[] = [];

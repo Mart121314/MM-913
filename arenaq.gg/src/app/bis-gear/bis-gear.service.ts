@@ -1,44 +1,44 @@
 import { Injectable } from '@angular/core';
+import { from, of, Observable } from 'rxjs';
+import { catchError, map, mergeMap, switchMap, toArray } from 'rxjs/operators';
+import { WowApiService, Region } from '../wow-api.service';
 
-import { WowApiService } from '../wow-api.service';
-import { forkJoin, map, Observable } from 'rxjs';
-
-
-import { map, Observable, switchMap, mergeMap, toArray, of, from, catchError } from 'rxjs';
-import { WowApiService } from '../wow-api.service';
-
-import { WowApiService } from '../wow-api.service';
-import { forkJoin, map, Observable } from 'rxjs';
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class BisGearService {
-
   constructor(private wow: WowApiService) {}
 
-  /**
-   * Determine the most common gear items from the top 1000 players.
-   */
-  getMostPopularGear(seasonId = 11): Observable<{ item: string; count: number }[]> {
-    return this.wow.getFull3v3Ladder(5, seasonId).pipe(
-      switchMap((players) =>
+  getMostPopularGear(
+    seasonId = 13,
+    region: Region = 'eu',
+    maxPages = 10,
+    concurrency = 5
+  ): Observable<{ item: string; count: number }[]> {
+    return this.wow.getFull3v3LadderAuto(seasonId, region, maxPages).pipe(
+      switchMap(players =>
         from(players).pipe(
-          mergeMap((p) =>
-            this.wow
-              .getCharacterEquipment(p.character.realm.slug, p.character.name)
-              .pipe(
-                map((equip) =>
-                  (equip.equipped_items || []).map((i: any) => i.item.name)
-                ),
-                catchError(() => of([]))
-              )
-          ),
+          mergeMap(player => {
+            const realm = player?.character?.realm?.slug ?? player?.realm?.slug;
+            const name = player?.character?.name ?? player?.name;
+            if (!realm || !name) {
+              return of<string[]>([]);
+            }
+            return this.wow.getCharacterEquipment(realm, name, region).pipe(
+              map(response =>
+                (response?.equipped_items ?? []).map(
+                  (item: any) => item?.item?.name ?? item?.name?.display_string ?? ''
+                )
+              ),
+              catchError(() => of<string[]>([]))
+            );
+          }, Math.max(1, concurrency)),
           toArray(),
-          map((allGear) => {
+          map(allItems => {
             const counts: Record<string, number> = {};
-            allGear.forEach((items: string[]) => {
-              items.forEach((item) => {
+            allItems.forEach(items => {
+              items.forEach((item: string | number) => {
+                if (!item) {
+                  return;
+                }
                 counts[item] = (counts[item] || 0) + 1;
               });
             });
@@ -49,32 +49,5 @@ export class BisGearService {
         )
       )
     );
-
-
-  constructor(private wowApi: WowApiService) {}
-
-  getMostPopularGear(players: any[]): Observable<{ itemId: number; count: number }[]> {
-    const requests = players.map(p =>
-      this.wowApi.getCharacterEquipment(
-        p.character.realm.slug,
-        p.character.name.toLowerCase()
-      )
-    );
-
-    return forkJoin(requests).pipe(
-      map(equipments => {
-        const counts: Record<number, number> = {};
-        equipments.forEach(eq => {
-          eq.equipped_items?.forEach((item: any) => {
-            const id = item.item.id;
-            counts[id] = (counts[id] || 0) + 1;
-          });
-        });
-        return Object.entries(counts)
-          .map(([id, cnt]) => ({ itemId: Number(id), count: cnt }))
-          .sort((a, b) => b.count - a.count);
-      })
-    );
-
   }
 }

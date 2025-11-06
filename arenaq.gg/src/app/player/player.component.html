@@ -1,2 +1,22 @@
 <h3>Player Equipment</h3>
-<pre>{{ equipment | json }}</pre>
+
+@if (error) {
+  <div class="error">{{ error }}</div>
+}
+
+@if (equipment$ | async; as equipment) {
+  @if (equipment?.equipped_items?.length) {
+    <ul>
+      @for (item of equipment.equipped_items; track item?.item?.id) {
+        <li>
+          {{ item?.name?.display_string ?? item?.item?.name ?? 'Unknown item' }}
+          <span>— ilvl {{ item?.level?.value ?? '-' }}</span>
+        </li>
+      }
+    </ul>
+  } @else if (!error) {
+    <div>No equipment found for this character.</div>
+  }
+} @else if (!error) {
+  <div>Loading equipment…</div>
+}

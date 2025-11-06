@@ -1,20 +1,28 @@
-<div *ngFor="let entry of playersByClass | keyvalue">
+<h3>Top Players by Class</h3>
 
+@if (error) {
+  <div class="error">{{ error }}</div>
+}
 
-  <h3>{{ entry.key }}</h3>
-  <div *ngFor="let p of entry.value" class="player-block">
-    <strong>{{ p.name }}</strong> - {{ p.rating }}
-    <ul>
-      <li *ngFor="let item of p.gear">{{ item }}</li>
-    </ul>
-  </div>
-
-
-  <h3>{{entry.key}}</h3>
-  <ul>
-    <li *ngFor="let p of entry.value">
-      {{p.character.name}} - {{p.rating}}
-    </li>
-  </ul>
-
-</div>
+@if (players$ | async; as groups) {
+  @if (groups.length) {
+    @for (group of groups; track group.classId) {
+      <section class="class-block">
+        <h4>{{ group.className }}</h4>
+        <ul>
+          @for (player of group.players; track player?.character?.id ?? player?.character?.name ?? player?.name) {
+            <li>
+              {{ player?.character?.name ?? 'Unknown' }}
+              <span>({{ player?.character?.realm?.slug ?? '?' }})</span>
+              <span>– {{ player?.rating ?? '-' }} rating</span>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  } @else if (!error) {
+    <div>No player data available.</div>
+  }
+} @else if (!error) {
+  <div>Loading players...</div>
+}

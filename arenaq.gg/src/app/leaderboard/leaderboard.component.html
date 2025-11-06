@@ -1,29 +1,47 @@
-<table>
-  <thead>
-    <tr>
-      <th>Rank</th>
-      <th>Name</th>
-      <th>Class</th>
-      <th>Realm</th>
-      <th>Wins</th>
-      <th>Losses</th>
-      <th>Rating</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let p of players">
-      <td>{{p.rank}}</td>
-      <td>{{p.character.name}}</td>
-      <td>{{p.character.playable_class.name}}</td>
-      <td>{{p.character.realm.name}}</td>
-      <td>{{p.season_match_statistics?.won}}</td>
-      <td>{{p.season_match_statistics?.lost}}</td>
-      <td>{{p.rating}}</td>
-    </tr>
-  </tbody>
-</table>
+<section class="controls">
+  <button type="button" (click)="setRegion('eu')" [disabled]="region === 'eu'">EU</button>
+  <button type="button" (click)="setRegion('us')" [disabled]="region === 'us'">US</button>
+</section>
+
+@if (loading) {
+  <div>Loading leaderboard...</div>
+} @else if (error) {
+  <div class="error">{{ error }}</div>
+} @else {
+  <table>
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Name</th>
+        <th>Realm</th>
+        <th>Class</th>
+        <th>Wins</th>
+        <th>Losses</th>
+        <th>Rating</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows; track trackByRow($index, row)) {
+        <tr>
+          <td>{{ row.rank ?? '-' }}</td>
+          <td>{{ row.name }}</td>
+          <td>{{ row.realm || '-' }}</td>
+          <td>{{ row.className }}</td>
+          <td>{{ row.wins ?? '-' }}</td>
+          <td>{{ row.losses ?? '-' }}</td>
+          <td>{{ row.rating ?? '-' }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7">No results.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
+
 <div class="pager">
-  <button (click)="loadPage(currentPage - 1)" [disabled]="currentPage <= 1">Prev</button>
-  <span>Page {{currentPage}}</span>
-  <button (click)="loadPage(currentPage + 1)">Next</button>
+  <button type="button" (click)="loadPage(currentPage - 1)" [disabled]="currentPage <= 1">Prev</button>
+  <span>Page {{ currentPage }}</span>
+  <button type="button" (click)="loadPage(currentPage + 1)">Next</button>
 </div>

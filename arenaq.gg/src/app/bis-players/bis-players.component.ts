@@ -1,22 +1,28 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { BisPlayerApiService } from './bis-playerapi.service';
+import { AsyncPipe, CommonModule } from '@angular/common';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { BisPlayerApiService, TopByClass } from './bis-playerapi.service';
 
 @Component({
   selector: 'app-bis-players',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AsyncPipe],
   templateUrl: './bis-players.component.html',
-  styleUrl: './bis-players.component.css'
+  styleUrls: ['./bis-players.component.css'],
 })
 export class BisPlayersComponent implements OnInit {
-  playersByClass: Record<string, any[]> = {};
+  players$!: Observable<TopByClass[]>;
+  error?: string;
 
   constructor(private bisApi: BisPlayerApiService) {}
 
   ngOnInit(): void {
-    this.bisApi.getTopPlayersByClass().subscribe((data) => {
-      this.playersByClass = data;
-    });
+    this.players$ = this.bisApi.getTopPlayersByClass().pipe(
+      catchError(() => {
+        this.error = 'Failed to load players.';
+        return of([]);
+      })
+    );
   }
 }

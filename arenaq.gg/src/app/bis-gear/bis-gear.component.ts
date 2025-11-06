@@ -1,51 +1,29 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
-import { WowApiService } from '../wow-api.service';
+import { AsyncPipe, CommonModule } from '@angular/common';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { BisGearService } from './bis-gear.service';
-import { switchMap } from 'rxjs';
-
-
-import { BisGearService } from './bis-gear.service';
-
-import { WowApiService } from '../wow-api.service';
-import { BisGearService } from './bis-gear.service';
-import { switchMap } from 'rxjs';
-
-
 
 @Component({
   selector: 'app-bis-gear',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AsyncPipe],
   templateUrl: './bis-gear.component.html',
-  styleUrl: './bis-gear.component.css'
+  styleUrls: ['./bis-gear.component.css'],
 })
 export class BisGearComponent implements OnInit {
+  gear$!: Observable<{ item: string; count: number }[]>;
+  error?: string;
 
-  topGear: { itemId: number; count: number }[] = [];
-
-  constructor(private wowApi: WowApiService, private gearSvc: BisGearService) {}
-
-
-
-  topGear: { item: string; count: number }[] = [];
-
-  constructor(private gearSvc: BisGearService) {}
+  constructor(private bisGear: BisGearService) {}
 
   ngOnInit(): void {
-    this.gearSvc.getMostPopularGear().subscribe((gear) => {
-      this.topGear = gear.slice(0, 10);
-
-  topGear: { itemId: number; count: number }[] = [];
-
-  constructor(private wowApi: WowApiService, private gearSvc: BisGearService) {}
-
-
-  ngOnInit(): void {
-    this.wowApi
-      .getFull3v3Ladder(5)
-      .pipe(switchMap((players) => this.gearSvc.getMostPopularGear(players)))
-      .subscribe((gear) => (this.topGear = gear.slice(0, 10)));
+    this.gear$ = this.bisGear.getMostPopularGear().pipe(
+      map(items => items.slice(0, 20)),
+      catchError(() => {
+        this.error = 'Failed to load popular gear.';
+        return of([]);
+      })
+    );
   }
 }

@@ -1,1 +1,0 @@
-import{Da as n}from"./chunk-QCMIUKNS.js";var i=class t{static \u0275fac=function(e){return new(e||t)};static \u0275cmp=n({type:t,selectors:[["app-activity"]],decls:0,vars:0,template:function(e,c){},encapsulation:2})};export{i as ActivityComponent};

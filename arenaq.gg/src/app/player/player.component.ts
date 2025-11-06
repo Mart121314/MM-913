@@ -1,33 +1,47 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AsyncPipe, CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { Observable, of } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 import { PlayerApiService } from './playerapi.service';
+import { Region } from '../wow-api.service';
 
 @Component({
   selector: 'app-player',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AsyncPipe],
   templateUrl: './player.component.html',
-  styleUrl: './player.component.css'
+  styleUrls: ['./player.component.css']
 })
 export class PlayerComponent implements OnInit {
-  equipment: any;
+  equipment$!: Observable<any | null>;
+  error?: string;
 
-  constructor(private playerApi: PlayerApiService) {}
+  constructor(
+    private route: ActivatedRoute,
+    private playerApi: PlayerApiService
+  ) {}
 
   ngOnInit(): void {
+    this.equipment$ = this.route.paramMap.pipe(
+      switchMap((params) => {
+        const region = (params.get('region') as Region | null) ?? 'eu';
+        const realm = params.get('realm');
+        const name = params.get('name');
 
-    // Example: hardcoded player
-    this.playerApi.getEquipment('some-realm', 'some-player').subscribe((e) => {
+        if (!realm || !name) {
+          this.error = 'Missing player route parameters.';
+          return of(null);
+        }
 
-
-    // Example usage with hardcoded player and realm
-    this.playerApi.getEquipment('some-realm', 'Gladsup').subscribe((e) => {
-
-    // Example: hardcoded player
-    this.playerApi.getEquipment('some-realm', 'some-player').subscribe((e) => {
-
-
-      this.equipment = e;
-    });
+        this.error = undefined;
+        return this.playerApi.getEquipment(region, realm, name).pipe(
+          catchError(() => {
+            this.error = 'Failed to load player equipment.';
+            return of(null);
+          })
+        );
+      })
+    );
   }
 }

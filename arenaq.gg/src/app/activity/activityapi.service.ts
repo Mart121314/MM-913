@@ -1,32 +1,16 @@
 import { Injectable } from '@angular/core';
-import { Observable, forkJoin } from 'rxjs';
-import { WowApiService } from '../wow-api.service';
+import { forkJoin, Observable, of } from 'rxjs';
+import { WowApiService, Region } from '../wow-api.service';
 
-@Injectable({
-    providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ActivityApiService {
+  constructor(private wow: WowApiService) {}
 
-    constructor(private wowApi: WowApiService) { }
-
-
-
-    constructor(private wow: WowApiService) { }
-
-    /** Fetch information for Cataclysm Classic seasons 9–11 */
-    getArchives(): Observable<any[]> {
-        const seasons = [9, 10, 11];
-        return forkJoin(seasons.map(id => this.wow.getSeason(id)));
-
-    constructor(private wowApi: WowApiService) { }
-
-
-    /** Fetch information about Cataclysm Classic seasons. */
-    getArchives(): Observable<any[]> {
-        return forkJoin([
-            this.wowApi.getSeason(9),
-            this.wowApi.getSeason(10)
-        ]);
-
+  getArchives(region: Region = 'eu'): Observable<any[]> {
+    const seasonIds = [9, 10, 11];
+    if (!seasonIds.length) {
+      return of([]);
     }
+    return forkJoin(seasonIds.map(id => this.wow.getSeason(id, region)));
+  }
 }

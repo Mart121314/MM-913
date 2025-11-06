@@ -1,22 +1,30 @@
-<h3>Most Popular Gear</h3>
-<table>
-  <tr>
+<h3>Most Popular Gear (3v3)</h3>
 
+@if (error) {
+  <div class="error">{{ error }}</div>
+}
 
-    <th>Item</th>
-    <th>Count</th>
-  </tr>
-  <tr *ngFor="let item of topGear">
-    <td>{{ item.item }}</td>
-    <td>{{ item.count }}</td>
-
-
-    <th>Item ID</th>
-    <th>Count</th>
-  </tr>
-  <tr *ngFor="let item of topGear">
-    <td>{{item.itemId}}</td>
-    <td>{{item.count}}</td>
-
-  </tr>
-</table>
+@if (gear$ | async; as gear) {
+  @if (gear.length) {
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (entry of gear; track entry.item) {
+          <tr>
+            <td>{{ entry.item }}</td>
+            <td>{{ entry.count }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else if (!error) {
+    <div>No gear data available.</div>
+  }
+} @else if (!error) {
+  <div>Loading gear...</div>
+}

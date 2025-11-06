@@ -1,108 +1,133 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { HttpHeaders } from '@angular/common/http';
 import { Observable, from, of } from 'rxjs';
-import { catchError, mergeMap, toArray, map, switchMap } from 'rxjs/operators';
+import { catchError, concatMap, map, switchMap, takeWhile, toArray } from 'rxjs/operators';
 import { BaseApiService } from './api.service';
+import { AuthenticationService } from './authentication.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+export type Region = 'eu' | 'us';
+
+@Injectable({ providedIn: 'root' })
 export class WowApiService extends BaseApiService {
-  private baseUrl = 'https://eu.api.blizzard.com';
-
-  /** Fetch a single leaderboard page for a given season. */
-  getLeaderboardPage(
-    seasonId: number,
-    page: number,
-    region: string = 'eu'
-  ): Observable<any[]> {
-    return this.authService.getAccessToken().pipe(
-      switchMap((token) => {
-        const headers = new HttpHeaders({
-          Authorization: `Bearer ${token.access_token}`,
-        });
-        const url =
-          `https://${region}.api.blizzard.com/data/wow/pvp-season/${seasonId}` +
-          `/pvp-leaderboard/3v3?page=${page}&namespace=dynamic-classic-${region}` +
-          `&locale=en_GB`;
-        return this.http
-          .get<any>(url, { headers })
-          .pipe(catchError(() => of({ entries: [] })));
-      }),
-      map((res) => res.entries || [])
-    );
+  constructor(http: HttpClient, authService: AuthenticationService) {
+    super(http, authService);
   }
 
-  /**
-   * Fetch the 3v3 ladder for the given season. By default this grabs
-   * the first five pages which roughly equals the top 1000 players.
-   */
-  getFull3v3Ladder(
-    pages: number = 5,
-    seasonId: number = 11,
-    region: string = 'eu'
-  ): Observable<any[]> {
-    return this.authService.getAccessToken().pipe(
-      switchMap((token) => {
-        const headers = new HttpHeaders({
-          Authorization: `Bearer ${token.access_token}`,
-        });
-        const pageNumbers = Array.from({ length: pages }, (_, i) => i + 1);
-        return from(pageNumbers).pipe(
-          mergeMap((page) =>
-            this.http
-              .get<any>(
-                `https://${region}.api.blizzard.com/data/wow/pvp-season/${seasonId}/pvp-leaderboard/3v3?page=${page}&namespace=dynamic-classic-${region}&locale=en_GB`,
-                { headers }
-              )
-              .pipe(catchError(() => of({ entries: [] })))
-          ),
-          toArray(),
-          map((responses) => {
-            const all = responses.flatMap((res) => res.entries || []);
-            const unique = all.filter(
-              (v, i, a) =>
-                a.findIndex((t) => t.character?.id === v.character?.id) === i
-            );
-            return unique;
-          })
+  private host(region: Region): string {
+    return `${region}.api.blizzard.com`;
+  }
+
+  private nsDynamic(region: Region): string {
+    return `dynamic-classic-${region}`;
+  }
+
+  private nsProfile(region: Region): string {
+    return `profile-classic-${region}`;
+  }
+
+  getClassicSeasonIndex(region: Region = 'eu'): Observable<any[]> {
+    return this.getAuthenticatedHeaders().pipe(
+      switchMap(headers => {
+        const url = `https://${this.host(region)}/data/wow/pvp-season/index?namespace=${this.nsDynamic(region)}&locale=en_GB`;
+        return this.http.get<any>(url, { headers }).pipe(
+          map(res => res?.seasons ?? []),
+          catchError(() => of<any[]>([]))
         );
       })
     );
   }
 
-  /** Fetch equipment for a specific character. */
+  getLeaderboardPage(seasonId: number, page: number, region: Region = 'eu'): Observable<any[]> {
+    return this.getAuthenticatedHeaders().pipe(
+      switchMap(headers => {
+        const url =
+          `https://${this.host(region)}/data/wow/pvp-season/${seasonId}/pvp-leaderboard/3v3` +
+          `?page=${page}&namespace=${this.nsDynamic(region)}&locale=en_GB`;
+        return this.http.get<any>(url, { headers }).pipe(
+          map(res => res?.entries ?? []),
+          catchError(() => of<any[]>([]))
+        );
+      })
+    );
+  }
+
+  getFull3v3Ladder(pages = 5, seasonId = 13, region: Region = 'eu'): Observable<any[]> {
+    const pageNumbers = Array.from({ length: Math.max(1, pages) }, (_, i) => i + 1);
+    return this.getAuthenticatedHeaders().pipe(
+      switchMap(headers =>
+        from(pageNumbers).pipe(
+          concatMap(page => {
+            const url =
+              `https://${this.host(region)}/data/wow/pvp-season/${seasonId}/pvp-leaderboard/3v3` +
+              `?page=${page}&namespace=${this.nsDynamic(region)}&locale=en_GB`;
+            return this.http.get<any>(url, { headers }).pipe(
+              map(res => res?.entries ?? []),
+              catchError(() => of<any[]>([]))
+            );
+          }),
+          toArray(),
+          map(chunks => this.dedupeEntries(chunks.flat()))
+        )
+      )
+    );
+  }
+
+  getFull3v3LadderAuto(
+    seasonId: number,
+    region: Region = 'eu',
+    maxPages = 20
+  ): Observable<any[]> {
+    const pages = Array.from({ length: Math.max(1, maxPages) }, (_, i) => i + 1);
+    return from(pages).pipe(
+      concatMap(page => this.getLeaderboardPage(seasonId, page, region)),
+      takeWhile(entries => entries.length > 0, true),
+      toArray(),
+      map(chunks => this.dedupeEntries(chunks.flat()))
+    );
+  }
+
   getCharacterEquipment(
     realmSlug: string,
     characterName: string,
-    region: string = 'eu'
+    region: Region = 'eu'
   ): Observable<any> {
-    return this.authService.getAccessToken().pipe(
-      switchMap((token) => {
-        const headers = new HttpHeaders({
-          Authorization: `Bearer ${token.access_token}`,
-        });
+    const realm = encodeURIComponent(realmSlug.toLowerCase());
+    const name = encodeURIComponent(characterName.toLowerCase());
+    return this.getAuthenticatedHeaders().pipe(
+      switchMap(headers => {
         const url =
-          `https://${region}.api.blizzard.com/profile/wow/character/${realmSlug}` +
-          `/${characterName}/equipment?namespace=profile-classic-${region}&locale=en_GB`;
+          `https://${this.host(region)}/profile/wow/character/${realm}/${name}/equipment` +
+          `?namespace=${this.nsProfile(region)}&locale=en_GB`;
         return this.http.get<any>(url, { headers });
       })
     );
   }
 
-  /** Fetch basic season information. */
-  getSeason(seasonId: number, region: string = 'eu'): Observable<any> {
-    return this.authService.getAccessToken().pipe(
-      switchMap((token) => {
-        const headers = new HttpHeaders({
-          Authorization: `Bearer ${token.access_token}`,
-        });
-        return this.http.get<any>(
-          `https://${region}.api.blizzard.com/data/wow/pvp-season/${seasonId}?namespace=dynamic-classic-${region}&locale=en_GB`,
-          { headers }
-        );
+  getSeason(seasonId: number, region: Region = 'eu'): Observable<any> {
+    return this.getAuthenticatedHeaders().pipe(
+      switchMap(headers => {
+        const url =
+          `https://${this.host(region)}/data/wow/pvp-season/${seasonId}` +
+          `?namespace=${this.nsDynamic(region)}&locale=en_GB`;
+        return this.http.get<any>(url, { headers });
       })
     );
+  }
+
+  private dedupeEntries(entries: any[]): any[] {
+    const seen = new Set<number>();
+    const result: any[] = [];
+    for (const entry of entries) {
+      const id = entry?.character?.id;
+      if (typeof id !== 'number') {
+        continue;
+      }
+      if (seen.has(id)) {
+        continue;
+      }
+      seen.add(id);
+      result.push(entry);
+    }
+    return result;
   }
 }

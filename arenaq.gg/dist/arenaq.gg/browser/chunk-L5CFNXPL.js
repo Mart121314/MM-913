@@ -1,1 +1,0 @@
-import{Da as n}from"./chunk-QCMIUKNS.js";var o=class e{static \u0275fac=function(t){return new(t||e)};static \u0275cmp=n({type:e,selectors:[["app-bis-gear"]],decls:0,vars:0,template:function(t,s){},encapsulation:2})};export{o as BisGearComponent};
