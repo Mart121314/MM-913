@@ -1,130 +1,120 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, from, of } from 'rxjs';
-import { catchError, mergeMap, toArray, map, switchMap } from 'rxjs/operators';
+import { Observable, of, from } from 'rxjs';
+import { catchError, concatMap, map, switchMap, takeWhile, toArray } from 'rxjs/operators';
 import { BaseApiService } from './api.service';
 import { AuthenticationService } from './authentication.service';
 
-// If you might target Era/Hardcore later, use: type ClassicFamily = 'classic' | 'classic1x';
-type ClassicFamily = 'classic';
+export type Region = 'eu' | 'us';
 
 @Injectable({ providedIn: 'root' })
 export class WowApiService extends BaseApiService {
-  private classicFamily: ClassicFamily = 'classic';
-
   constructor(http: HttpClient, authService: AuthenticationService) {
-    super(http, authService); // ✅ pass concrete class to BaseApiService
+    super(http, authService);
   }
 
-  /** Namespace helpers (return strings, not booleans) */
-  private nsDynamic(region: string): string {
-    return this.classicFamily === 'classic'
-      ? `dynamic-classic-${region}`
-      : `dynamic-classic1x-${region}`;
-  }
+  /** Helpers */
+private host = (r: Region) => `${r}.api.blizzard.com`;
+private nsDyn = (r: Region) => `dynamic-classic-${r}`;
+private nsProfile(region: Region) { return `profile-classic-${region}`; }  // MoP/Cata Classic
 
-  private nsProfile(region: string): string {
-    return this.classicFamily === 'classic'
-      ? `profile-classic-${region}`
-      : `profile-classic1x-${region}`;
-  }
+  /** Season index (source of truth; avoids 404 guessing) */
+getClassicSeasonIndex(region: Region) {
+  return this.authService.getAccessToken().pipe(
+    switchMap(t => {
+      const headers = new HttpHeaders({ Authorization: `Bearer ${t.access_token}` });
+      const url = `https://${this.host(region)}/data/wow/pvp-season/index?namespace=${this.nsDyn(region)}&locale=en_GB`;
+      return this.http.get<any>(url, { headers });
+    }),
+    map(idx => idx?.seasons ?? [])
+  );
+}
 
-  /** Fetch a single leaderboard page for a given season. */
+  /** One leaderboard page (returns [] on error) */
   getLeaderboardPage(
     seasonId: number,
     page: number,
-    region: string = 'eu'
+    region: Region = 'eu'
   ): Observable<any[]> {
     return this.authService.getAccessToken().pipe(
-      switchMap((token) => {
+      switchMap(token => {
         const headers = new HttpHeaders({ Authorization: `Bearer ${token.access_token}` });
         const url =
-          `https://${region}.api.blizzard.com/data/wow/pvp-season/${seasonId}` +
-          `/pvp-leaderboard/3v3?page=${page}&namespace=${this.nsDynamic(region)}` +
-          `&locale=en_GB`;
-        return this.http.get<any>(url, { headers }).pipe(catchError(() => of({ entries: [] })));
-      }),
-      map((res) => res.entries || [])
-    );
-  }
-
-  /** Fetch the 3v3 ladder for the given season. */
-  getFull3v3Ladder(
-    pages: number = 5,
-    seasonId: number = 11,
-    region: string = 'eu'
-  ): Observable<any[]> {
-    return this.authService.getAccessToken().pipe(
-      switchMap((token) => {
-        const headers = new HttpHeaders({ Authorization: `Bearer ${token.access_token}` });
-        const pageNumbers = Array.from({ length: pages }, (_, i) => i + 1);
-
-        return from(pageNumbers).pipe(
-          mergeMap((page) =>
-            this.http
-              .get<any>(
-                `https://${region}.api.blizzard.com/data/wow/pvp-season/${seasonId}/pvp-leaderboard/3v3?page=${page}&namespace=${this.nsDynamic(region)}&locale=en_GB`,
-                { headers }
-              )
-              .pipe(catchError(() => of({ entries: [] })))
-          ),
-          toArray(),
-          map((responses) => {
-            const all = responses.flatMap((res) => res.entries || []);
-            // de-dupe by character id
-            return all.filter(
-              (v, i, a) => a.findIndex((t) => t.character?.id === v.character?.id) === i
-            );
-          })
+          `https://${this.host(region)}/data/wow/pvp-season/${seasonId}/pvp-leaderboard/3v3` +
+          `?page=${page}&namespace=${this.nsDyn(region)}&locale=en_GB`;
+        return this.http.get<any>(url, { headers }).pipe(
+          map(res => res?.entries ?? []),
+          catchError(() => of([]))
         );
       })
     );
   }
 
-  /** Fetch equipment for a specific character. */
+  /** Walk pages until empty (caps at maxPages) */
+getFull3v3LadderAuto(seasonId: number, region: Region, maxPages = 20) {
+  const pages = Array.from({ length: maxPages }, (_, i) => i + 1);
+  return from(pages).pipe(
+    concatMap(p => this.get3v3Page(seasonId, p, region)),
+    takeWhile(list => list.length > 0, true),
+    toArray(),
+    map(chunks => {
+      const all = chunks.flat();
+      const seen = new Set<number>();
+      return all.filter(e => {
+        const id = e?.character?.id;
+        if (typeof id !== 'number') return false;
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
+    })
+  );
+}
+
+  /** Legacy: fixed number of pages (kept, but typed consistently) */
+ private get3v3Page(seasonId: number, page: number, region: Region) {
+  return this.authService.getAccessToken().pipe(
+    switchMap(t => {
+      const headers = new HttpHeaders({ Authorization: `Bearer ${t.access_token}` });
+      const url =
+        `https://${this.host(region)}/data/wow/pvp-season/${seasonId}/pvp-leaderboard/3v3` +
+        `?page=${page}&namespace=${this.nsDyn(region)}&locale=en_GB`;
+      return this.http.get<any>(url, { headers }).pipe(
+        map(r => r?.entries ?? []),
+        catchError(() => of([]))
+      );
+    })
+  );
+}
+
+  /** Character equipment (MoP Classic only) */
   getCharacterEquipment(
     realmSlug: string,
     characterName: string,
-    region: string = 'eu'
+    region: Region = 'eu'
   ): Observable<any> {
     const realm = encodeURIComponent(realmSlug.toLowerCase());
-    const name = encodeURIComponent(characterName.toLowerCase());
+    const name  = encodeURIComponent(characterName.toLowerCase());
 
     return this.authService.getAccessToken().pipe(
-      switchMap((token) => {
+      switchMap(token => {
         const headers = new HttpHeaders({ Authorization: `Bearer ${token.access_token}` });
         const url =
-          `https://${region}.api.blizzard.com/profile/wow/character/${realm}/${name}/equipment` +
+          `https://${this.host(region)}/profile/wow/character/${realm}/${name}/equipment` +
           `?namespace=${this.nsProfile(region)}&locale=en_GB`;
         return this.http.get<any>(url, { headers });
-      }),
-      // Optional fallback to Era/Hardcore namespace if you later switch classicFamily logic.
-      catchError((err) => {
-        if (this.classicFamily === 'classic') {
-          const altNs = `profile-classic1x-${region}`;
-          return this.authService.getAccessToken().pipe(
-            switchMap((token) => {
-              const headers = new HttpHeaders({ Authorization: `Bearer ${token.access_token}` });
-              const url =
-                `https://${region}.api.blizzard.com/profile/wow/character/${realm}/${name}/equipment` +
-                `?namespace=${altNs}&locale=en_GB`;
-              return this.http.get<any>(url, { headers });
-            })
-          );
-        }
-        throw err;
       })
     );
   }
 
-  /** Fetch basic season information. */
-  getSeason(seasonId: number, region: string = 'eu'): Observable<any> {
+  /** Season metadata */
+  getSeason(seasonId: number, region: Region = 'eu'): Observable<any> {
     return this.authService.getAccessToken().pipe(
-      switchMap((token) => {
+      switchMap(token => {
         const headers = new HttpHeaders({ Authorization: `Bearer ${token.access_token}` });
         const url =
-          `https://${region}.api.blizzard.com/data/wow/pvp-season/${seasonId}` +
-          `?namespace=${this.nsDynamic(region)}&locale=en_GB`;
+          `https://${this.host(region)}/data/wow/pvp-season/${seasonId}` +
+          `?namespace=${this.nsDyn(region)}&locale=en_GB`;
         return this.http.get<any>(url, { headers });
       })
     );

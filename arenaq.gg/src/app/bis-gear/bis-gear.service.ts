@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { map, Observable, switchMap, mergeMap, toArray, of, from, catchError } from 'rxjs';
 import { WowApiService } from '../wow-api.service';
-import { forkJoin } from 'rxjs';
+
 
 @Injectable({
   providedIn: 'root'
@@ -10,8 +10,8 @@ export class BisGearService {
 
   constructor(private wow: WowApiService) {}
 
-  getMostPopularGear(seasonId = 11): Observable<{ item: string; count: number }[]> {
-    return this.wow.getFull3v3Ladder(5, seasonId).pipe(
+  getMostPopularGear(seasonId = 12): Observable<{ item: string; count: number }[]> {
+    return this.wow.getFull3v3LadderAuto(seasonId =12, 'eu').pipe(
       switchMap((players) =>
         from(players).pipe(
           mergeMap((p) =>

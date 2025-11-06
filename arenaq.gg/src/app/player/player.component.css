@@ -1,0 +1,22 @@
+.wrap { max-width: 980px; margin: 24px auto; padding: 0 16px; }
+.back { text-decoration: none; color: inherit; opacity: .8; }
+.loading { opacity: .8; }
+.error { color: #c0392b; }
+
+.header h1 { margin: 12px 0 4px; font-size: 28px; }
+.sub { color: #666; display: flex; gap: 8px; align-items: center; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.card { border: 1px solid #e8e8e8; border-radius: 12px; padding: 16px; background: #fff; }
+
+.kv { list-style: none; padding: 0; margin: 0; }
+.kv li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #eee; }
+.kv li:last-child { border-bottom: 0; }
+
+.items { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.items li { display: grid; grid-template-columns: 140px 1fr; gap: 12px; align-items: center; padding: 8px; border: 1px solid #eee; border-radius: 10px; }
+.slot { color: #666; }
+.name { font-weight: 600; }
+.ilvl { font-weight: 400; opacity: .7; margin-left: 8px; }
+
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }

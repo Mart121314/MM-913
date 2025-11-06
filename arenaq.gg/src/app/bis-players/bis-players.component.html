@@ -1,23 +1,22 @@
-@for (entry of playersByClass | keyvalue; track entry) {
-  <div>
-    <h3>{{ entry.key }}</h3>
-    @for (p of entry.value; track p) {
-      <div class="player-block">
-        <strong>{{ p.name }}</strong> - {{ p.rating }}
+@if (loading) {
+  <div>Loading top players...</div>
+} @else if (error) {
+  <div>{{ error }}</div>
+} @else {
+  @if (topByClass.length) {
+    <div class="class-grid">
+      <div class="class-card" *ngFor="let group of topByClass; trackBy: trackByClass">
+        <h3>{{ group.className || ('Class ' + group.classId) }}</h3>
         <ul>
-          @for (item of p.gear; track item) {
-            <li>{{ item }}</li>
-          }
+          <li *ngFor="let p of group.players; let i = index">
+            <span>#{{ p?.rank ?? '—' }}</span>
+            <span>{{ p?.character?.name ?? 'Unknown' }}</span>
+            <span>{{ p?.rating ?? '—' }}</span>
+          </li>
         </ul>
       </div>
-    }
-    <h3>{{entry.key}}</h3>
-    <ul>
-      @for (p of entry.value; track p) {
-        <li>
-          {{p.character.name}} - {{p.rating}}
-        </li>
-      }
-    </ul>
-  </div>
+    </div>
+  } @else {
+    <div>No data.</div>
+  }
 }

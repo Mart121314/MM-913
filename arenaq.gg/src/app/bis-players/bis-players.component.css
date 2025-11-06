@@ -1,0 +1,59 @@
+.status {
+  text-align: center;
+  color: #ccc;
+  margin-top: 2rem;
+  font-size: 1rem;
+}
+
+.status.error {
+  color: #f55;
+}
+
+.bis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  padding: 1rem 2rem;
+}
+
+.class-card {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 1rem;
+  color: #fff;
+  transition: transform 0.2s ease;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.1);
+}
+
+.class-card:hover {
+  transform: scale(1.03);
+}
+
+.class-card h3 {
+  margin: 0 0 0.5rem;
+  color: #e33;
+  border-bottom: 2px solid #e33;
+  padding-bottom: 4px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 0.9rem;
+}
+
+.rank {
+  color: #888;
+}
+
+.rating {
+  color: #ff5555;
+}

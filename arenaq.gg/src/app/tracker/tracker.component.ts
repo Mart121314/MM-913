@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild, NgZone, OnInit} from '@angular/core';
 import * as echarts from 'echarts';
 import { TrackerService } from './tracker.service';
 

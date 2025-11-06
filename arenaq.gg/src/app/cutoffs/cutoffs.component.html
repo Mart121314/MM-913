@@ -1,13 +1,39 @@
-@if (gladiatorCutoff !== null) {
-  <div class="cutoff-container">
-    <h2>Season 11 Cutoffs</h2>
-    <p>Total Players: {{ totalPlayers }}</p>
-    <p>Rank 1 Title: <strong>{{ rank1Cutoff }}</strong> Rating</p>
-    <p>Gladiator: <strong>{{ gladiatorCutoff }}</strong> Rating</p>
+<div class="cutoffs-wrap">
+  <h2 class="title">3v3 Cutoffs</h2>
+
+  <div class="meta">
+    <span class="meta-item">
+      <span class="dot"></span>
+      Total Players: {{ totalPlayers || '—' }}
+    </span>
   </div>
-}
-@if (gladiatorCutoff === null) {
-  <div>
-    <p>Loading cutoff data or API unavailable...</p>
+
+  <div class="cutoffs-grid">
+    <div class="tile rank1">
+      <div class="label">Rank 1 Title</div>
+      <div class="value">{{ rank1Cutoff ?? '—' }}</div>
+      <div class="sub">Live rating threshold</div>
+    </div>
+
+    <div class="tile glad">
+      <div class="label">Gladiator</div>
+      <div class="value">{{ gladiatorCutoff ?? '—' }}</div>
+      <div class="sub">Live rating threshold</div>
+    </div>
+
+    <!-- Optional: add more tiles when you compute them dynamically -->
+    <!--
+    <div class="tile duelist">
+      <div class="label">Duelist</div>
+      <div class="value">{{ duelistCutoff ?? '—' }}</div>
+      <div class="sub">Top 3%</div>
+    </div>
+
+    <div class="tile rival">
+      <div class="label">Rival</div>
+      <div class="value">{{ rivalCutoff ?? '—' }}</div>
+      <div class="sub">Top 10%</div>
+    </div>
+    -->
   </div>
-}
+</div>

@@ -1,18 +1,14 @@
 @if (equipment$ | async; as eq) {
-  <div>
-    @if (eq?.equipped_items?.length) {
-      <div>
-        @for (item of eq.equipped_items; track item) {
-          <div>
-            {{ item.name?.display_string }} (ilvl: {{ item.level?.value }})
-          </div>
-        }
-      </div>
-    } @else {
-      No items found.
+  <!-- use eq here -->
+  @if (eq?.equipped_items?.length) {
+    @for (item of eq.equipped_items; track item?.item?.id) {
+      <div>{{ item?.name?.display_string }} — ilvl {{ item?.level?.value ?? '—' }}</div>
+    } @empty {
+      <div>No items found.</div>
     }
-  </div>
+  } @else {
+    <div>No equipment data.</div>
+  }
 } @else {
-  Loading…
+  <div>Loading…</div>
 }
-
