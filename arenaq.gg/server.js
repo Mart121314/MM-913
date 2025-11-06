@@ -12,7 +12,7 @@ const {
 } = require('./tracker-snapshot');
 const { OUTPUT_PATH: BIS_TOP_PATH } = require('./bis-top-snapshot');
 const { OUTPUT_PATH: LEADERBOARD_PATH } = require('./leaderboard-snapshot');
-
+const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
