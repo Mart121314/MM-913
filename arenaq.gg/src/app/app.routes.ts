@@ -2,7 +2,16 @@ import { Routes } from '@angular/router';
 import { PlayerComponent } from './player/player.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'leaderboard', pathMatch: 'full' },
+  {
+    path: '',
+    redirectTo: 'tracker',
+    pathMatch: 'full',
+  },
+  {
+    path: 'tracker',
+    loadComponent: () =>
+      import('./tracker/tracker.component').then(m => m.TrackerComponent),
+  },
   {
     path: 'leaderboard',
     loadComponent: () =>
@@ -33,12 +42,8 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./bis-players/bis-players.component').then(m => m.BisPlayersComponent),
   },
-  {
-    path: 'tracker',
-    loadComponent: () =>
-      import('./tracker/tracker.component').then(m => m.TrackerComponent),
-  },
   { path: 'character/:region/:realm/:name', component: PlayerComponent },
   { path: 'player/:region/:realm/:name', component: PlayerComponent },
-  { path: '**', redirectTo: 'leaderboard' },
+  { path: '**', redirectTo: 'tracker' },
 ];
+

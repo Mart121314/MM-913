@@ -1,36 +1,42 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
-import { AuthenticationService } from '../authentication.service';
-import { TrackedGames } from './tracker.model';
+import { PvpBracket, Region } from '../wow-api.service';
+
+export type TrackerEvent = {
+  id: string;
+  bracket: PvpBracket;
+  characterId: number;
+  name: string;
+  realm: string;
+  race: string;
+  className: string;
+  spec: string;
+  rank: number | null;
+  rankChange: number;
+  rating: number | null;
+  ratingChange: number;
+  wins: number | null;
+  winsChange: number;
+  losses: number | null;
+  lossesChange: number;
+  trackedAt: string;
+};
+
+export type TrackerResponse = {
+  region: Region;
+  generatedAt: string;
+  events: TrackerEvent[];
+};
 
 @Injectable({
   providedIn: 'root',
 })
 export class TrackerService {
-  private apiUrl = 'https://us.api.blizzard.com/data/wow/pvp-season'; // Base API URL
+  constructor(private http: HttpClient) {}
 
-  constructor(
-    private http: HttpClient,
-    private authService: AuthenticationService
-  ) {}
-
-  // Fetch tracked games data
-  getTrackedGames(seasonId: number, bracket: string): Observable<TrackedGames[]> {
-    return this.authService.getAccessToken().pipe(
-      switchMap((token) => {
-        const headers = new HttpHeaders().set(
-          'Authorization',
-          `Bearer ${token.access_token}`
-        );
-
-        const params = new HttpParams().set('locale', 'en_US');
-        return this.http.get<TrackedGames[]>(
-          `${this.apiUrl}/${seasonId}/pvp-leaderboard/${bracket}`,
-          { headers, params }
-        );
-      })
-    );
+  getActivity(region: Region): Observable<TrackerResponse> {
+    const params = new HttpParams().set('region', region);
+    return this.http.get<TrackerResponse>('/api/tracker', { params });
   }
 }

@@ -1,4 +1,115 @@
-<div class="tracker-container">
-  <h2>Tracked Games</h2>
-  <div id="tracked-games-chart" class="chart"></div>
-</div>
+<section class="tracker-container">
+  <header class="tracker-header">
+    <div>
+      <h1>Arena Activity Tracker</h1>
+      <p class="subtitle">Live snapshots every refresh · compares the latest Blizzard data against your last check.</p>
+    </div>
+    <div class="tracker-controls">
+      <label>
+        Region
+        <select #regionSelect [value]="region" (change)="onRegionChange(regionSelect.value)">
+          @for (item of regions; track item) {
+            <option [value]="item">{{ item.toUpperCase() }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Bracket
+        <select
+          #bracketSelect
+          [value]="bracketFilter"
+          (change)="onBracketFilterChange(bracketSelect.value)"
+        >
+          @for (item of bracketFilterOptions; track item) {
+            <option [value]="item">{{ item === 'all' ? 'All brackets' : item.toUpperCase() }}</option>
+          }
+        </select>
+      </label>
+      <button type="button" (click)="refresh()" [disabled]="loading">
+        {{ loading ? 'Refreshing…' : 'Refresh' }}
+      </button>
+    </div>
+  </header>
+
+  @if (generatedAt) {
+    <p class="generated-at">
+      Snapshot updated {{ timeAgo(generatedAt) }} · {{ formatTimestamp(generatedAt) }}
+    </p>
+  }
+
+  @if (error) {
+    <div class="status error">
+      {{ error }}
+    </div>
+  }
+
+  @if (loading && !error) {
+    <div class="status">Loading latest matches…</div>
+  }
+
+  @if (!loading && !error && !filteredEvents.length) {
+    <div class="status">No tracked changes yet. Check back after the next Blizzard update.</div>
+  }
+
+  @if (filteredEvents.length) {
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Bracket</th>
+            <th>Rank</th>
+            <th>Δ Rank</th>
+            <th>Δ Rating</th>
+            <th>Player</th>
+            <th>Race</th>
+            <th>Class</th>
+            <th>Spec</th>
+            <th>Wins</th>
+            <th>Δ Wins</th>
+            <th>Losses</th>
+            <th>Δ Losses</th>
+            <th>Tracked</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (event of filteredEvents; track trackByEventId) {
+            <tr>
+              <td>{{ event.bracket.toUpperCase() }}</td>
+              <td>{{ event.rank ?? '—' }}</td>
+              <td [class.positive]="event.rankChange > 0" [class.negative]="event.rankChange < 0">
+                @if (event.rankChange > 0) { +{{ event.rankChange }} } @else if (event.rankChange < 0) {
+                  {{ event.rankChange }}
+                } @else { — }
+              </td>
+              <td [class.positive]="event.ratingChange > 0" [class.negative]="event.ratingChange < 0">
+                @if (event.ratingChange > 0) { +{{ event.ratingChange }} } @else if (event.ratingChange < 0) {
+                  {{ event.ratingChange }}
+                } @else { — }
+              </td>
+              <td>
+                <span class="player-name">{{ event.name }}</span>
+                <span class="player-realm">({{ event.realm }})</span>
+              </td>
+              <td>{{ event.race }}</td>
+              <td>{{ event.className }}</td>
+              <td>{{ event.spec || '—' }}</td>
+              <td>{{ event.wins ?? '—' }}</td>
+              <td [class.positive]="event.winsChange > 0" [class.negative]="event.winsChange < 0">
+                @if (event.winsChange > 0) { +{{ event.winsChange }} } @else if (event.winsChange < 0) {
+                  {{ event.winsChange }}
+                } @else { — }
+              </td>
+              <td>{{ event.losses ?? '—' }}</td>
+              <td [class.negative]="event.lossesChange > 0" [class.positive]="event.lossesChange < 0">
+                @if (event.lossesChange > 0) { +{{ event.lossesChange }} } @else if (event.lossesChange < 0) {
+                  {{ event.lossesChange }}
+                } @else { — }
+              </td>
+              <td>{{ timeAgo(event.trackedAt) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

@@ -1,69 +1,117 @@
 import { Component, OnInit } from '@angular/core';
-import * as echarts from 'echarts';
-import { TrackerService } from './tracker.service';
+import { CommonModule, DatePipe } from '@angular/common';
+import { TrackerService, TrackerEvent, TrackerResponse } from './tracker.service';
+import { PvpBracket, Region } from '../wow-api.service';
 
 @Component({
   selector: 'app-tracker',
   standalone: true,
+  imports: [CommonModule],
   templateUrl: './tracker.component.html',
   styleUrls: ['./tracker.component.css'],
 })
 export class TrackerComponent implements OnInit {
-  chart: any;
+  readonly regions: Region[] = ['eu', 'us'];
+  readonly brackets: readonly PvpBracket[] = ['2v2', '3v3', '5v5'];
+  readonly bracketFilterOptions: Array<PvpBracket | 'all'> = ['all', ...this.brackets];
+
+  region: Region = 'eu';
+  bracketFilter: PvpBracket | 'all' = 'all';
+
+  loading = false;
+  error?: string;
+  generatedAt?: string;
+
+  events: TrackerEvent[] = [];
+  filteredEvents: TrackerEvent[] = [];
 
   constructor(private trackerService: TrackerService) {}
 
   ngOnInit(): void {
-    this.initChart();
-    this.fetchTrackedGames();
+    this.refresh();
   }
 
-  initChart(): void {
-    const chartDom = document.getElementById('tracked-games-chart')!;
-    this.chart = echarts.init(chartDom);
-
-    this.chart.setOption({
-      tooltip: {
-        trigger: 'axis',
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        borderColor: '#333',
-        textStyle: { color: '#fff' },
+  refresh(): void {
+    this.loading = true;
+    this.error = undefined;
+    this.trackerService.getActivity(this.region).subscribe({
+      next: (response: TrackerResponse) => {
+        this.events = response.events ?? [];
+        this.generatedAt = response.generatedAt;
+        this.applyFilter();
+        this.loading = false;
       },
-      legend: { data: ['2v2', '3v3', 'RBG'], top: 10, textStyle: { color: '#fff' } },
-      xAxis: {
-        type: 'category',
-        boundaryGap: false,
-        data: [], // Dates to be filled dynamically
-        axisLabel: { color: '#fff' },
+      error: err => {
+        this.error = err?.message ?? 'Failed to load tracker data.';
+        this.loading = false;
       },
-      yAxis: {
-        type: 'value',
-        axisLabel: { color: '#fff' },
-        splitLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.2)' } },
-      },
-      series: [
-        { name: '2v2', type: 'line', data: [], smooth: true },
-        { name: '3v3', type: 'line', data: [], smooth: true },
-        { name: 'RBG', type: 'line', data: [], smooth: true },
-      ],
     });
   }
 
-  fetchTrackedGames(): void {
-    this.trackerService.getTrackedGames(32, '3v3').subscribe((data) => {
-      const dates = data.map((item) => item.date);
-      const games2v2 = data.map((item) => (item.bracket === '2v2' ? item.gamesPlayed : 0));
-      const games3v3 = data.map((item) => (item.bracket === '3v3' ? item.gamesPlayed : 0));
-      const gamesRBG = data.map((item) => (item.bracket === 'rbg' ? item.gamesPlayed : 0));
+  onRegionChange(regionValue: string): void {
+    const region = regionValue.toLowerCase();
+    if (region === this.region) {
+      return;
+    }
+    this.region = (this.regions.includes(region as Region) ? (region as Region) : 'eu') ?? 'eu';
+    this.refresh();
+  }
 
-      this.chart.setOption({
-        xAxis: { data: dates },
-        series: [
-          { name: '2v2', data: games2v2 },
-          { name: '3v3', data: games3v3 },
-          { name: 'RBG', data: gamesRBG },
-        ],
-      });
+  onBracketFilterChange(filterValue: string): void {
+    this.bracketFilter = filterValue === 'all' ? 'all' : (filterValue as PvpBracket);
+    this.applyFilter();
+  }
+
+  trackByEventId(_index: number, event: TrackerEvent): string {
+    return event.id;
+  }
+
+  timeAgo(iso: string): string {
+    if (!iso) {
+      return '';
+    }
+    const now = Date.now();
+    const value = new Date(iso).getTime();
+    if (!Number.isFinite(value)) {
+      return '';
+    }
+    const diffMs = now - value;
+    if (diffMs < 60_000) {
+      return 'just now';
+    }
+    const minutes = Math.floor(diffMs / 60_000);
+    if (minutes < 60) {
+      return `${minutes}m ago`;
+    }
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+      return `${hours}h ago`;
+    }
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  }
+
+  formatTimestamp(iso: string | undefined): string {
+    if (!iso) {
+      return '';
+    }
+    const time = new Date(iso);
+    if (!Number.isFinite(time.getTime())) {
+      return iso;
+    }
+    return time.toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
+  }
+
+  private applyFilter(): void {
+    const source =
+      this.bracketFilter === 'all'
+        ? this.events
+        : this.events.filter(event => event.bracket === this.bracketFilter);
+    this.filteredEvents = source.slice(0, 500);
   }
 }
