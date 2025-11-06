@@ -41,7 +41,7 @@ app.get('/api/token', async (req, res) => {
 
 // Fallback route to Angular's index.html for SPA support
 const indexPath = path.join(angularDistPath, 'index.html');
-app.get('/*', (req, res) => {
+app.get(/.*/, (req, res) => {
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
