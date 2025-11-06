@@ -11,7 +11,6 @@ const {
   updateTrackerForRegion,
   getCachedTrackerSnapshot,
 } = require('./tracker-snapshot');
-
 const { OUTPUT_PATH: BIS_TOP_PATH } = require('./bis-top-snapshot');
 const { OUTPUT_PATH: LEADERBOARD_PATH } = require('./leaderboard-snapshot');
 
@@ -20,20 +19,19 @@ const PORT = process.env.PORT || 3000;
 
 // CORS
 app.use(cors({ origin: true }));
-app.get('*', handler)
 
-// ✅ Serve Angular browser bundle
+// Serve Angular browser bundle
 const angularDistPath = path.join(__dirname, 'dist', 'arenaq.gg', 'browser');
 app.use(express.static(angularDistPath));
 const indexPath = path.join(angularDistPath, 'index.html');
 
-// ------------ API ROUTES ------------
+// ---------------- API ROUTES ----------------
 app.get('/api/token', async (_req, res) => {
   try {
     const { token, expiresIn } = await getAccessToken();
     res.json({ access_token: token, expires_in: expiresIn });
-  } catch (error) {
-    console.error('Token fetch failed:', error?.response?.data || error.message);
+  } catch (e) {
+    console.error('Token fetch failed:', e?.response?.data || e.message);
     res.status(500).json({ error: 'Failed to retrieve token' });
   }
 });
@@ -46,14 +44,12 @@ app.get('/api/tracker', async (req, res) => {
   try {
     const response = await updateTrackerForRegion(regionParam);
     res.json(response);
-  } catch (error) {
-    const status = error?.response?.status ?? error?.status ?? 500;
+  } catch (e) {
+    const status = e?.response?.status ?? e?.status ?? 500;
     if (status === 429) {
-      console.warn('Tracker API rate limited; serving cached snapshot.');
       const cached = getCachedTrackerSnapshot(regionParam);
       if (cached) return res.json({ ...cached, rateLimited: true });
     }
-    console.error('Tracker endpoint failure', error?.response?.data || error.message);
     res.status(status).json({ error: 'Failed to build tracker snapshot', rateLimited: status === 429 });
   }
 });
@@ -62,8 +58,7 @@ app.get('/api/bis-top', (_req, res) => {
   try {
     if (!fs.existsSync(BIS_TOP_PATH)) return res.status(404).json({ error: 'BiS snapshot unavailable' });
     res.type('application/json').send(fs.readFileSync(BIS_TOP_PATH, 'utf-8'));
-  } catch (error) {
-    console.error('Failed to serve BiS snapshot', error);
+  } catch (e) {
     res.status(500).json({ error: 'Failed to read BiS snapshot' });
   }
 });
@@ -101,14 +96,13 @@ app.get('/api/leaderboard', (req, res) => {
       cutoffs: bracketData.cutoffs ?? null,
       cached: true,
     });
-  } catch (error) {
-    console.error('Failed to serve leaderboard snapshot', error);
+  } catch (e) {
     res.status(500).json({ error: 'Failed to read leaderboard snapshot' });
   }
 });
-// ------------ END API ROUTES ------------
+// -------------- END API ROUTES --------------
 
-// ✅ SPA fallback (after API routes)
-app.get('*', (_req, res) => res.sendFile(indexPath));
+// ✅ Express 5–safe SPA fallback (must be after API routes)
+app.get('/*', (_req, res) => res.sendFile(indexPath));
 
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
