@@ -1,0 +1,178 @@
+section.bis-gear-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 24px;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  box-shadow: 0 24px 40px rgba(15, 23, 42, 0.45);
+  color: #f8fafc;
+}
+
+.gear-header h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 2.5vw, 2.2rem);
+}
+
+.gear-header .subtitle {
+  margin: 6px 0 0;
+  color: rgba(248, 250, 252, 0.75);
+  max-width: 760px;
+}
+
+.class-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.class-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(15, 23, 42, 0.6);
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+}
+
+.class-chip:hover {
+  border-color: rgba(96, 165, 250, 0.8);
+  transform: translateY(-1px);
+}
+
+.class-chip.active {
+  border-color: rgba(34, 197, 94, 0.8);
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.class-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.table-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.timestamp {
+  font-size: 0.85rem;
+  color: rgba(224, 231, 255, 0.75);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.gear-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gear-table thead th {
+  text-align: left;
+  padding: 14px 18px;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(15, 23, 42, 0.85);
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.gear-table td {
+  padding: 16px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.gear-table tbody tr:hover {
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.rank {
+  font-weight: 700;
+  color: #4ade80;
+  width: 60px;
+}
+
+.item-name {
+  font-weight: 600;
+  color: #fef9c3;
+}
+
+.usage-cell {
+  min-width: 220px;
+}
+
+.usage-bar {
+  position: relative;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.usage-fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.95), rgba(16, 185, 129, 0.8));
+}
+
+.usage-label {
+  font-size: 0.85rem;
+  color: rgba(248, 250, 252, 0.8);
+}
+
+.status {
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.65);
+}
+
+.status.error {
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #fecaca;
+}
+
+.status.empty {
+  color: rgba(248, 250, 252, 0.75);
+}
+
+@media (max-width: 768px) {
+  section.bis-gear-container {
+    padding: 20px;
+  }
+
+  .class-selector {
+    flex-direction: column;
+  }
+
+  .gear-table td,
+  .gear-table th {
+    padding: 12px;
+  }
+}

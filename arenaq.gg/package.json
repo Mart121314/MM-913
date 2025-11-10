@@ -7,6 +7,7 @@
     "build": "ng build",
     "build:ssr": "ng build --configuration production && ng run arenaq.gg:server:production",
     "watch": "ng build --watch --configuration development",
+    "server": "node server.cjs",
     "test": "ng test",
     "tracker:update": "node scripts/update-tracker.js",
     "bis:update": "node scripts/update-bis-top.js",

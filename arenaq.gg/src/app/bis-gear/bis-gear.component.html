@@ -1,39 +1,84 @@
-<h3>Most Popular Gear (3v3)</h3>
+<section class="bis-gear-container">
+  <header class="gear-header">
+    <div>
+      <h1>Most Popular Gear</h1>
+      <p class="subtitle">
+        Explore the top three items most frequently equipped by high-rated 3v3 players for each class.
+        Select a class icon to inspect its best-in-slot choices.
+      </p>
+    </div>
+  </header>
 
-@if (error) {
-  <div class="error">{{ error }}</div>
-}
+  <div class="class-selector">
+    @for (option of classOptions; track option.slug) {
+      <button
+        type="button"
+        class="class-chip"
+        [class.active]="(selectedClass$ | async) === option.slug"
+        (click)="onSelectClass(option.slug)"
+      >
+        <img
+          class="class-icon"
+          [src]="getClassIcon(option.slug)"
+          [alt]="option.name"
+          loading="lazy"
+          (error)="onIconError($event)"
+        />
+        <span>{{ option.name }}</span>
+      </button>
+    }
+  </div>
 
-@if (vm$ | async; as vm) {
-  <p class="filters">
-    Showing
-    <strong>{{ vm.filters.classSlug ?? 'all classes' }}</strong> |
-    <strong>{{ vm.filters.specSlug ?? 'all specs' }}</strong> |
-    <strong>{{ vm.filters.slot ?? 'all slots' }}</strong>
-  </p>
-
-  @if (vm.items.length) {
-    <table>
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Slot</th>
-          <th>Count</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (entry of vm.items; track entry.item + entry.slot) {
-          <tr>
-            <td>{{ entry.item }}</td>
-            <td>{{ entry.slot }}</td>
-            <td>{{ entry.count }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  } @else if (!error) {
-    <div>No gear data available.</div>
+  @if (error) {
+    <div class="status error">{{ error }}</div>
   }
-} @else if (!error) {
-  <div>Loading gear...</div>
-}
+
+  @if (!error) {
+    @if (vm$ | async; as vm) {
+      <div class="table-meta">
+        <span class="pill">{{ vm.className }}</span>
+        <span class="pill">Samples · {{ vm.totalSamples }}</span>
+        <span class="pill">Region · {{ vm.regionLabel }}</span>
+        @if (vm.generatedAt) {
+          <span class="timestamp">Updated {{ vm.generatedAt | date: 'medium' }}</span>
+        }
+      </div>
+
+      @if (vm.items.length) {
+        <div class="table-wrapper" tabindex="0">
+          <table class="gear-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Item</th>
+                <th>Slot</th>
+                <th>Usage</th>
+              </tr>
+            </thead>
+            <tbody>
+            @for (entry of vm.items; track trackItem(entry); let i = $index) {
+                <tr>
+                  <td class="rank">#{{ i + 1 }}</td>
+                  <td class="item-name">{{ entry.item }}</td>
+                  <td>{{ entry.slot }}</td>
+                  <td class="usage-cell">
+                    <div class="usage-bar">
+                      <div class="usage-fill" [style.width.%]="entry.percent"></div>
+                    </div>
+                    <span class="usage-label">
+                      {{ formatPercent(entry.percent) }} · {{ entry.count }} players
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="status empty">No gear data available for this class yet.</div>
+      }
+    } @else {
+      <div class="status">Loading gear snapshot...</div>
+    }
+  }
+</section>

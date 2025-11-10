@@ -12,9 +12,10 @@
         class="profile-header"
         [style.--class-color]="classColor(profile)"
       >
-        <div class="header-main">
+        <div class="header-layout">
+          <div class="header-main">
           <h1 [style.color]="classColor(profile)">
-            {{ profile.summary?.name ?? 'Unknown Adventurer' }}
+            {{ profile.summary?.name ?? characterName ?? 'Unknown Adventurer' }}
           </h1>
           <div class="subtitle">
             <span class="realm">
@@ -72,6 +73,16 @@
               Character profile is hidden; displaying ladder snapshot details only.
             </p>
           }
+          </div>
+          @if (avatarUrl(profile); as avatar) {
+            <div class="avatar-wrapper">
+              <img
+                [src]="avatar"
+                [alt]="profile.summary?.name ?? 'Character avatar'"
+                loading="lazy"
+              />
+            </div>
+          }
         </div>
       </header>
 
@@ -85,7 +96,18 @@
             </li>
             <li>
               <span class="label">Race</span>
-              <span>{{ profile.summary?.race?.name?.en_GB ?? profile.summary?.race?.name ?? routeExtras?.race ?? '-' }}</span>
+              <span class="race-icon-wrapper" [attr.title]="raceName(profile) ?? '-'">
+                @if (raceIcon(profile); as raceAsset) {
+                  <img
+                    class="race-icon"
+                    [src]="raceAsset"
+                    [alt]="raceName(profile) ?? 'Race icon'"
+                    loading="lazy"
+                  />
+                } @else {
+                  <span class="race-placeholder">{{ raceName(profile) ?? '-' }}</span>
+                }
+              </span>
             </li>
             <li>
               <span class="label">Faction</span>
@@ -102,14 +124,29 @@
           <h2>Equipped Items</h2>
           @if (profile.equipment?.equipped_items?.length) {
             <ul>
-              @for (item of profile.equipment.equipped_items; track item?.item?.id ?? item?.name?.display_string) {
+              @for (item of profile.equipment.equipped_items; track trackEquipmentItem(item)) {
                 <li>
                   <div class="item-name">
-                    {{ item?.name?.display_string ?? item?.item?.name ?? 'Unknown item' }}
+                    <a
+                      class="item-link"
+                      [href]="wowheadItemHref(item) ?? '#'"
+                      target="_blank"
+                      rel="noopener"
+                      [attr.data-wowhead]="wowheadDataAttr(item)"
+                      data-wh-icon-size="small"
+                    >
+                      @if (equipmentIcon(item); as iconUrl) {
+                        <ins
+                          class="item-icon"
+                          [style.backgroundImage]="'url(' + iconUrl + ')'"
+                        ></ins>
+                      }
+                      <span class="item-text">{{ equipmentName(item) }}</span>
+                    </a>
                   </div>
                   <div class="item-meta">
-                    <span>Slot: {{ item?.slot?.type ?? '-' }}</span>
-                    <span>ilvl {{ item?.level?.value ?? '-' }}</span>
+                    <span>Slot: {{ equipmentSlot(item) }}</span>
+                    <span>ilvl {{ equipmentItemLevel(item) }}</span>
                   </div>
                 </li>
               }

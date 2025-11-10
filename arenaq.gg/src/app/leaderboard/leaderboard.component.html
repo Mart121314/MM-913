@@ -37,13 +37,24 @@
           <td class="rank-cell">#{{ row.rank ?? '-' }}</td>
           <td class="player-cell">
             <div class="player-stack">
-              <img
-                class="class-icon"
-                [src]="classIcon(row)"
-                [alt]="row.className"
-                (error)="onIconError($event)"
-                loading="lazy"
-              />
+              <div class="icon-stack">
+                <img
+                  class="class-icon"
+                  [src]="classIcon(row)"
+                  [alt]="row.className"
+                  (error)="onIconError($event)"
+                  loading="lazy"
+                />
+                @if (raceIcon(row); as raceIconUrl) {
+                  <img
+                    class="race-icon"
+                    [src]="raceIconUrl"
+                    [alt]="row.race ?? 'Race icon'"
+                    loading="lazy"
+                    (error)="onRaceIconError($event)"
+                  />
+                }
+              </div>
               <div class="player-meta">
                 <a
                   class="player-name"

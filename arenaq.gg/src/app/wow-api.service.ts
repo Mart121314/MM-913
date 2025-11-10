@@ -1,12 +1,19 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, of, throwError, forkJoin } from 'rxjs';
 import { catchError, map, shareReplay, switchMap } from 'rxjs/operators';
 import { BaseApiService } from './api.service';
 import { AuthenticationService } from './authentication.service';
 
 export type Region = 'eu' | 'us';
 export type PvpBracket = '2v2' | '3v3' | '5v5';
+type CharacterResource = 'summary' | 'equipment' | 'specializations' | 'media';
+const CHARACTER_RESOURCE_SUFFIX: Record<CharacterResource, string> = {
+  summary: '',
+  equipment: '/equipment',
+  specializations: '/specializations',
+  media: '/character-media',
+};
 
 type RewardEntry = {
   bracket?: { type?: string | null };
@@ -35,6 +42,10 @@ export class WowApiService extends BaseApiService {
 
   private nsProfile(region: Region): string {
     return `profile-classic-${region}`;
+  }
+
+  private nsStatic(region: Region): string {
+    return `static-classic-${region}`;
   }
 
   getClassicSeasonIndex(region: Region = 'eu'): Observable<any[]> {
@@ -172,38 +183,35 @@ export class WowApiService extends BaseApiService {
     return this.getFullLadderAuto(seasonId, '3v3', region, maxPages);
   }
 
-  getCharacterEquipment(
+  private fetchCharacterFromBlizzard(
+    region: Region,
     realmSlug: string,
     characterName: string,
-    region: Region = 'eu'
+    resource: CharacterResource
   ): Observable<any> {
     const realm = encodeURIComponent(realmSlug.toLowerCase());
     const name = encodeURIComponent(characterName.toLowerCase());
+    const suffix = CHARACTER_RESOURCE_SUFFIX[resource];
+    if (suffix == null) {
+      return throwError(() => new Error(`Unsupported resource ${resource}`));
+    }
     return this.getAuthenticatedHeaders().pipe(
       switchMap(headers => {
         const url =
-          `https://${this.host(region)}/profile/wow/character/${realm}/${name}/equipment` +
+          `https://${this.host(region)}/profile/wow/character/${realm}/${name}${suffix}` +
           `?namespace=${this.nsProfile(region)}&locale=en_GB`;
         return this.http.get<any>(url, { headers });
       })
     );
   }
 
-  getCharacterSpecializations(
+  private getCharacterResource(
+    region: Region,
     realmSlug: string,
     characterName: string,
-    region: Region = 'eu'
+    resource: CharacterResource
   ): Observable<any> {
-    const realm = encodeURIComponent(realmSlug.toLowerCase());
-    const name = encodeURIComponent(characterName.toLowerCase());
-    return this.getAuthenticatedHeaders().pipe(
-      switchMap(headers => {
-        const url =
-          `https://${this.host(region)}/profile/wow/character/${realm}/${name}/specializations` +
-          `?namespace=${this.nsProfile(region)}&locale=en_GB`;
-        return this.http.get<any>(url, { headers });
-      })
-    );
+    return this.fetchCharacterFromBlizzard(region, realmSlug, characterName, resource);
   }
 
   getSeason(seasonId: number, region: Region = 'eu'): Observable<any> {
@@ -222,16 +230,89 @@ export class WowApiService extends BaseApiService {
     characterName: string,
     region: Region = 'eu'
   ): Observable<any> {
-    const realm = encodeURIComponent(realmSlug.toLowerCase());
-    const name = encodeURIComponent(characterName.toLowerCase());
+    return this.getCharacterResource(region, realmSlug, characterName, 'summary');
+  }
+
+  getCharacterEquipment(
+    realmSlug: string,
+    characterName: string,
+    region: Region = 'eu'
+  ): Observable<any> {
+    return this.getCharacterResource(region, realmSlug, characterName, 'equipment');
+  }
+
+  getCharacterSpecializations(
+    realmSlug: string,
+    characterName: string,
+    region: Region = 'eu'
+  ): Observable<any> {
+    return this.getCharacterResource(region, realmSlug, characterName, 'specializations');
+  }
+
+  getCharacterMedia(
+    realmSlug: string,
+    characterName: string,
+    region: Region = 'eu'
+  ): Observable<any> {
+    return this.getCharacterResource(region, realmSlug, characterName, 'media');
+  }
+
+  getItemMedia(itemId: number, region: Region = 'eu', namespaceOverride?: string): Observable<any> {
+    const id = Math.trunc(itemId);
+    if (!Number.isFinite(id)) {
+      return throwError(() => new Error('Invalid item id'));
+    }
     return this.getAuthenticatedHeaders().pipe(
       switchMap(headers => {
+        const namespace = namespaceOverride ?? this.nsStatic(region);
         const url =
-          `https://${this.host(region)}/profile/wow/character/${realm}/${name}` +
-          `?namespace=${this.nsProfile(region)}&locale=en_GB`;
+          `https://${this.host(region)}/data/wow/media/item/${id}` +
+          `?namespace=${namespace}&locale=en_GB`;
         return this.http.get<any>(url, { headers });
       })
     );
+  }
+
+  getItemMediaByHref(href: string): Observable<any> {
+    if (!href) {
+      return throwError(() => new Error('Missing media href'));
+    }
+    const url = href.includes('locale=') ? href : `${href}${href.includes('?') ? '&' : '?'}locale=en_GB`;
+    return this.getAuthenticatedHeaders().pipe(
+      switchMap(headers => this.http.get<any>(url, { headers }))
+    );
+  }
+
+  getCharacterProfileBundle(
+    realmSlug: string,
+    characterName: string,
+    region: Region = 'eu'
+  ): Observable<any> {
+    return this.fetchCharacterProfileFromBlizzard(region, realmSlug, characterName);
+  }
+
+  private fetchCharacterProfileFromBlizzard(
+    region: Region,
+    realmSlug: string,
+    characterName: string
+  ): Observable<any> {
+    return forkJoin({
+      summary: this.fetchCharacterFromBlizzard(region, realmSlug, characterName, 'summary').pipe(
+        catchError(() => of(null))
+      ),
+      equipment: this.fetchCharacterFromBlizzard(region, realmSlug, characterName, 'equipment').pipe(
+        catchError(() => of(null))
+      ),
+      specializations: this.fetchCharacterFromBlizzard(
+        region,
+        realmSlug,
+        characterName,
+        'specializations'
+      ).pipe(catchError(() => of(null))),
+      media: this.fetchCharacterFromBlizzard(region, realmSlug, characterName, 'media').pipe(
+        catchError(() => of(null))
+      ),
+    });
   }
 
   private dedupeEntries(entries: any[]): any[] {

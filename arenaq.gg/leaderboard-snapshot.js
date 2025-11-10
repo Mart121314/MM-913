@@ -96,15 +96,24 @@ const buildEntry = (entry, summary, region) => {
 
   const specName = summary?.active_spec?.name ?? null;
   const specSlug = specName ? slugify(specName) : null;
-  const race =
+  const raceName =
     summary?.race?.name?.en_GB ??
     summary?.race?.name ??
     null;
+  const raceId = summary?.race?.id ?? null;
+  const raceSlug = raceName ? slugify(raceName) : null;
+  const raceIcon = buildRaceIconUrl(raceId, region);
 
   const faction =
     summary?.faction?.name?.en_GB ??
     summary?.faction?.name ??
     summary?.faction?.type ??
+    null;
+
+  const gender =
+    summary?.gender?.name?.en_GB ??
+    summary?.gender?.name ??
+    summary?.gender?.type ??
     null;
 
   const realmSlug =
@@ -120,6 +129,7 @@ const buildEntry = (entry, summary, region) => {
 
   const routeName = summary?.name ?? entry?.character?.name ?? 'Unknown';
   const name = entry?.character?.name ?? entry?.name ?? routeName;
+  const regionCode = String(region ?? '').toUpperCase() || null;
 
   return {
     characterId,
@@ -133,12 +143,16 @@ const buildEntry = (entry, summary, region) => {
     classSlug,
     specName,
     specSlug,
-    race,
+    race: raceName,
+    raceId,
+    raceSlug,
+    raceIcon,
     rank,
     rating,
     wins,
     losses,
-    region,
+    gender,
+    region: regionCode,
   };
 };
 
@@ -148,9 +162,20 @@ const slugify = value =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
+const buildRaceIconUrl = (raceId, region) => {
+  if (typeof raceId !== 'number' || !Number.isFinite(raceId)) {
+    return null;
+  }
+  const shard = String(region ?? '')
+    .toLowerCase()
+    .startsWith('us')
+    ? 'us'
+    : 'eu';
+  return `https://render.worldofwarcraft.com/classic-${shard}/race/${raceId}-0.jpg`;
+};
+
 const buildRegionSnapshot = async (region, token) => {
   const seasonId = await resolveSeasonId(region, token);
-  const upperRegion = region.toUpperCase();
   const cache = new Map();
 
   const result = {
@@ -162,7 +187,7 @@ const buildRegionSnapshot = async (region, token) => {
   for (const bracket of BRACKETS) {
     const entries = await fetchLeaderboard(region, seasonId, bracket, token);
 
-    const enriched = await enrichEntries(entries, region, token, cache, upperRegion);
+    const enriched = await enrichEntries(entries, region, token, cache);
     const cutoffs = computeCutoffs(enriched);
 
     result.brackets[bracket] = {
@@ -176,7 +201,7 @@ const buildRegionSnapshot = async (region, token) => {
   return result;
 };
 
-const enrichEntries = async (entries, region, token, cache, upperRegion) => {
+const enrichEntries = async (entries, region, token, cache) => {
   const results = [];
   let index = 0;
 
@@ -211,7 +236,7 @@ const enrichEntries = async (entries, region, token, cache, upperRegion) => {
       if (!summary) {
         continue;
       }
-      results.push(buildEntry(entry, summary, upperRegion));
+      results.push(buildEntry(entry, summary, region));
     }
 
     if (index < entries.length) {

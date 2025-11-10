@@ -20,6 +20,9 @@ export class PlayerComponent implements OnInit {
   cutoffs$!: Observable<LeaderboardCutoffs | null>;
   error?: string;
   routeExtras?: PlayerRouteExtras;
+  region: Region = 'eu';
+  realmSlug?: string | null;
+  characterName?: string | null;
 
   constructor(
     private route: ActivatedRoute,
@@ -61,6 +64,9 @@ export class PlayerComponent implements OnInit {
         }
 
         this.routeExtras = extras;
+        this.region = params.region;
+        this.realmSlug = params.realm;
+        this.characterName = params.name;
         this.error = undefined;
 
         if (extras.hidden) {
@@ -123,7 +129,98 @@ export class PlayerComponent implements OnInit {
     );
   }
 
+  avatarUrl(profile: PlayerProfile | null): string | null {
+    return resolveAvatarAsset(profile);
+  }
+
+  raceIcon(profile: PlayerProfile | null): string | null {
+    return resolveRaceIcon(profile, this.routeExtras, this.region);
+  }
+
+  raceName(profile: PlayerProfile | null): string | null {
+    return (
+      profile?.summary?.race?.name?.en_GB ??
+      profile?.summary?.race?.name ??
+      this.routeExtras?.race ??
+      null
+    );
+  }
+
   trackTalent = (_: number, item: TalentOption) => item.name;
+
+  trackEquipmentItem(item: any): string | number {
+    return (
+      item?.item?.id ??
+      item?.name?.display_string ??
+      item?.item?.name ??
+      item?.slot?.type ??
+      item?.slot?.name ??
+      ''
+    );
+  }
+
+  equipmentName(item: any): string {
+    return (
+      item?.name?.display_string ??
+      item?.name ??
+      item?.item?.name ??
+      item?.item?.key?.name ??
+      'Unknown item'
+    );
+  }
+
+  equipmentSlot(item: any): string {
+    return (
+      item?.slot?.name?.display_string ??
+      item?.slot?.name ??
+      item?.slot?.type ??
+      'Unknown'
+    );
+  }
+
+  equipmentItemLevel(item: any): string {
+    const numeric =
+      item?.level?.value ??
+      item?.ilevel ??
+      item?.item_level ??
+      item?.item?.level?.value ??
+      parseLevelFromDisplay(
+        item?.level?.display_string ??
+          item?.item?.level?.display_string ??
+          (typeof item?.level === 'string' ? item.level : undefined) ??
+          (typeof item?.item?.level === 'string' ? item.item.level : undefined)
+      );
+    return Number.isFinite(numeric) ? String(numeric) : '-';
+  }
+
+  wowheadItemHref(item: any): string | null {
+    const id = this.equipmentItemId(item);
+    return id ? `https://www.wowhead.com/mop-classic/item=${id}` : null;
+  }
+
+  wowheadDataAttr(item: any): string | null {
+    const id = this.equipmentItemId(item);
+    return id ? `item=${id}&domain=mop-classic` : null;
+  }
+
+  private equipmentItemId(item: any): number | null {
+    const id =
+      item?.item?.id ??
+      item?.item?.key?.id ??
+      item?.transmog?.item?.id ??
+      item?.appearance?.item?.id ??
+      null;
+    return typeof id === 'number' ? id : null;
+  }
+
+  equipmentIcon(item: any): string | null {
+    return (
+      item?.__icon ??
+      item?.icon ??
+      item?.transmog?.icon ??
+      null
+    );
+  }
 
   private buildFallbackProfile(
     realm: string,
@@ -153,6 +250,7 @@ export class PlayerComponent implements OnInit {
       },
       equipment: null,
       specializations: null,
+      media: null,
     };
   }
 }
@@ -182,6 +280,14 @@ function normalize(value: string | null): string | null {
     return null;
   }
   return value.trim();
+}
+
+function parseLevelFromDisplay(displayValue: string | undefined): number | null {
+  if (!displayValue) {
+    return null;
+  }
+  const match = displayValue.match(/(\d+)/);
+  return match ? Number(match[1]) : null;
 }
 
 function normalizeBracket(value: string | null): PvpBracket | null {
@@ -284,3 +390,103 @@ function classColorForName(className: string | null | undefined): string {
   const slug = className.toLowerCase().replace(/[^a-z]/g, '-');
   return CLASS_COLORS[slug] ?? '#f5f5f5';
 }
+
+function resolveAvatarAsset(profile: PlayerProfile | null): string | null {
+  const media = profile?.media;
+  if (!media) {
+    return null;
+  }
+
+  const assets = [
+    ...(Array.isArray(media.character_assets) ? media.character_assets : []),
+    ...(Array.isArray(media.assets) ? media.assets : []),
+  ];
+
+  const avatar =
+    assets.find((asset: any) => (asset?.key ?? asset?.type) === 'avatar') ??
+    assets.find((asset: any) => (asset?.key ?? asset?.type) === 'main') ??
+    assets.find((asset: any) => (asset?.key ?? asset?.type) === 'inset');
+
+  if (avatar?.value || avatar?.url || avatar?.href) {
+    return avatar.value ?? avatar.url ?? avatar.href ?? null;
+  }
+
+  if (typeof media?.render_url === 'string') {
+    return media.render_url;
+  }
+  if (typeof media?.avatar_url === 'string') {
+    return media.avatar_url;
+  }
+
+  return null;
+}
+
+function resolveRaceIcon(
+  profile: PlayerProfile | null,
+  extras: PlayerRouteExtras | undefined,
+  region: Region
+): string | null {
+  const raceId =
+    profile?.summary?.race?.id ??
+    raceNameToId(
+      profile?.summary?.race?.name?.en_GB ??
+        profile?.summary?.race?.name ??
+        extras?.race ??
+        null
+    );
+  if (!raceId) {
+    return null;
+  }
+  return buildRaceIconUrl(raceId, region);
+}
+
+function buildRaceIconUrl(raceId: number, region: Region | string | undefined): string | null {
+  if (!Number.isFinite(raceId)) {
+    return null;
+  }
+  const shard = String(region ?? 'eu').toLowerCase().startsWith('us') ? 'us' : 'eu';
+  return `https://render.worldofwarcraft.com/classic-${shard}/race/${raceId}-0.jpg`;
+}
+
+function raceNameToId(raceName: string | null | undefined): number | null {
+  if (!raceName) {
+    return null;
+  }
+  const slug = raceName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return RACE_NAME_TO_ID[slug] ?? null;
+}
+
+const RACE_NAME_TO_ID: Record<string, number> = {
+  human: 1,
+  orc: 2,
+  dwarf: 3,
+  'night-elf': 4,
+  nightelf: 4,
+  undead: 5,
+  forsaken: 5,
+  tauren: 6,
+  gnome: 7,
+  troll: 8,
+  goblin: 9,
+  'blood-elf': 10,
+  bloodelf: 10,
+  draenei: 11,
+  'worgen': 22,
+  pandaren: 24,
+  'pandaren-alliance': 25,
+  'pandaren-horde': 26,
+  'nightborne': 27,
+  'highmountain-tauren': 28,
+  'void-elf': 29,
+  'lightforged-draenei': 30,
+  'zandalari-troll': 31,
+  'kul-tiran': 32,
+  'dark-iron-dwarf': 34,
+  'vulpera': 35,
+  'maghar-orc': 36,
+  mechagnome: 37,
+  dracthyr: 70,
+};

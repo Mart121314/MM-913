@@ -44,6 +44,7 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 18px 35px rgba(0, 0, 0, 0.45);
+  table-layout: fixed;
 }
 
 .leaderboard-table thead th {
@@ -80,6 +81,15 @@
   text-align: left;
 }
 
+.col-record,
+.record-cell {
+  text-align: right;
+}
+
+.col-record {
+  width: 140px;
+}
+
 .col-rating,
 .rating-cell {
   text-align: right;
@@ -99,16 +109,39 @@
 .player-stack {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+}
+
+.icon-stack {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .class-icon {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.45);
+  background: rgba(15, 23, 42, 0.65);
+}
+
+.race-icon {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(15, 23, 42, 0.85);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.55);
+  background: rgba(2, 6, 23, 0.8);
 }
 
 .player-meta {
@@ -152,8 +185,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  justify-content: center;
+  justify-content: flex-end;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  min-width: 110px;
 }
 
 .record-cell .wins {

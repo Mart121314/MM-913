@@ -17,10 +17,15 @@ export interface LeaderboardEntry {
   specName: string | null;
   specSlug: string | null;
   race: string | null;
+  raceId: number | null;
+  raceSlug: string | null;
+  raceIcon: string | null;
+  gender: string | null;
   rank: number | null;
   rating: number | null;
   wins: number | null;
   losses: number | null;
+  region: string | null;
 }
 
 export interface LeaderboardCutoffs {

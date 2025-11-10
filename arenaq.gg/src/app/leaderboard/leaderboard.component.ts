@@ -157,6 +157,10 @@ export class LeaderboardComponent implements OnInit {
     return Number.isFinite(value ?? NaN) ? String(value) : '0';
   }
 
+  raceIcon(row: LeaderboardEntry): string | null {
+    return raceIconPath(row, this.region);
+  }
+
   onIconError(event: Event): void {
     const img = event.target as HTMLImageElement | null;
     if (!img) {
@@ -165,11 +169,36 @@ export class LeaderboardComponent implements OnInit {
     img.onerror = null;
     img.src = DEFAULT_CLASS_ICON;
   }
+
+  onRaceIconError(event: Event): void {
+    const img = event.target as HTMLImageElement | null;
+    if (!img) {
+      return;
+    }
+    img.onerror = null;
+    img.style.display = 'none';
+  }
 }
 
 function classIconPath(slug: string): string {
   const override = CLASS_ICON_OVERRIDES[slug];
   return `assets/icons/${override ?? `${slug}.webp`}`;
+}
+
+function raceIconPath(entry: LeaderboardEntry, fallbackRegion: Region): string | null {
+  if (entry?.raceIcon) {
+    return entry.raceIcon;
+  }
+  const raceId = entry?.raceId;
+  if (typeof raceId !== 'number' || !Number.isFinite(raceId)) {
+    return null;
+  }
+  const regionSlug = String(entry?.region ?? fallbackRegion ?? 'eu')
+    .toLowerCase()
+    .startsWith('us')
+    ? 'us'
+    : 'eu';
+  return `https://render.worldofwarcraft.com/classic-${regionSlug}/race/${raceId}-0.jpg`;
 }
 
 const CLASS_ICON_OVERRIDES: Record<string, string | undefined> = {
