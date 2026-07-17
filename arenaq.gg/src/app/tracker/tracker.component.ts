@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { TrackerService, TrackerEvent, TrackerResponse } from './tracker.service';
 import { PvpBracket, Region } from '../wow-api.service';
 
 @Component({
   selector: 'app-tracker',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './tracker.component.html',
   styleUrls: ['./tracker.component.css'],
 })

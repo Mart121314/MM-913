@@ -1,6 +1,8 @@
 <h3>Previous Seasons</h3>
 <ul>
-  <li *ngFor="let s of seasons">
-    {{s.name}} ({{s.start_timestamp | date}} - {{s.end_timestamp | date}})
-  </li>
+  @for (s of seasons; track s) {
+    <li>
+      {{s.name}} ({{s.start_timestamp | date}} - {{s.end_timestamp | date}})
+    </li>
+  }
 </ul>

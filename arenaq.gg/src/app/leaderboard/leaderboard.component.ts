@@ -1,5 +1,5 @@
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -13,7 +13,7 @@ import { PvpBracket, Region } from '../wow-api.service';
 @Component({
   selector: 'app-leaderboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './leaderboard.component.html',
   styleUrls: ['./leaderboard.component.css'],
 })

@@ -1,6 +1,8 @@
 <h3>Season Archives</h3>
-<div *ngFor="let season of archives">
-  <h4>{{season.name}}</h4>
-  <p>Start: {{season.start_timestamp | date}}</p>
-  <p>End: {{season.end_timestamp | date}}</p>
-</div>
+@for (season of archives; track season) {
+  <div>
+    <h4>{{season.name}}</h4>
+    <p>Start: {{season.start_timestamp | date}}</p>
+    <p>End: {{season.end_timestamp | date}}</p>
+  </div>
+}
