@@ -1,9 +1,62 @@
 <h3>Previous Seasons</h3>
-<ul>
+
+<section class="controls">
+  <div class="region-controls">
+    <button type="button" (click)="setRegion('eu')" [disabled]="region === 'eu'">EU</button>
+    <button type="button" (click)="setRegion('us')" [disabled]="region === 'us'">US</button>
+  </div>
+  <div class="bracket-controls">
+    @for (option of brackets; track option) {
+      <button
+        type="button"
+        (click)="setBracket(option)"
+        [class.active]="option === bracket"
+      >
+        {{ option.toUpperCase() }}
+      </button>
+    }
+  </div>
+</section>
+
+@if (loading) {
+  <div class="status">Loading archives...</div>
+} @else {
   @for (s of seasons; track s.id) {
-    <li>
-      Season {{s.id}} ({{s.season_start_timestamp | date}} -
-      {{s.season_end_timestamp ? (s.season_end_timestamp | date) : 'Present'}})
-    </li>
+    <section class="season-block">
+      <h4>
+        Season {{ s.id }}
+        ({{ s.season_start_timestamp | date }} -
+        {{ s.season_end_timestamp ? (s.season_end_timestamp | date) : 'Present' }})
+      </h4>
+
+      @if (s.standings.length) {
+        <table class="standings-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Player</th>
+              <th>Realm</th>
+              <th>Faction</th>
+              <th>Record</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of s.standings; track row.character.id) {
+              <tr>
+                <td>#{{ row.rank }}</td>
+                <td>{{ row.character.name }}</td>
+                <td>{{ row.character.realm.slug }}</td>
+                <td>{{ row.faction.type }}</td>
+                <td>{{ row.season_match_statistics.won }}-{{ row.season_match_statistics.lost }}</td>
+                <td>{{ row.rating }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <div class="status">No standings available for this bracket/season.</div>
+      }
+    </section>
   }
-</ul>
+}
