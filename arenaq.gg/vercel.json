@@ -1,0 +1,6 @@
+{
+  "outputDirectory": "dist/arenaq.gg/browser",
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}
