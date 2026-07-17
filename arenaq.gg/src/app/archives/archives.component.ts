@@ -16,13 +16,18 @@ export class ArchivesComponent implements OnInit {
 
   region: Region = 'eu';
   bracket: PvpBracket = '3v3';
-  loading = false;
+
+  loadingSeasons = false;
+  loadingStandings = false;
+
   seasons: any[] = [];
+  selectedSeasonId: number | null = null;
+  standings: any[] = [];
 
   constructor(private archivesApi: ArchivesApiService) {}
 
   ngOnInit(): void {
-    this.refresh();
+    this.loadSeasons();
   }
 
   setRegion(region: Region): void {
@@ -30,7 +35,7 @@ export class ArchivesComponent implements OnInit {
       return;
     }
     this.region = region;
-    this.refresh();
+    this.loadSeasons();
   }
 
   setBracket(bracket: PvpBracket): void {
@@ -38,14 +43,43 @@ export class ArchivesComponent implements OnInit {
       return;
     }
     this.bracket = bracket;
-    this.refresh();
+    if (this.selectedSeasonId != null) {
+      this.loadStandings(this.selectedSeasonId);
+    }
   }
 
-  private refresh(): void {
-    this.loading = true;
-    this.archivesApi.getRecentSeasonsWithStandings(this.bracket, this.region).subscribe(seasons => {
+  selectSeason(seasonId: number): void {
+    if (seasonId === this.selectedSeasonId) {
+      return;
+    }
+    this.loadStandings(seasonId);
+  }
+
+  get selectedSeason(): any {
+    return this.seasons.find(s => s.id === this.selectedSeasonId) ?? null;
+  }
+
+  private loadSeasons(): void {
+    this.loadingSeasons = true;
+    this.archivesApi.getRecentSeasons(4, this.region).subscribe(seasons => {
       this.seasons = seasons;
-      this.loading = false;
+      this.loadingSeasons = false;
+      const firstSeasonId = seasons[0]?.id ?? null;
+      if (firstSeasonId != null) {
+        this.loadStandings(firstSeasonId);
+      } else {
+        this.selectedSeasonId = null;
+        this.standings = [];
+      }
+    });
+  }
+
+  private loadStandings(seasonId: number): void {
+    this.selectedSeasonId = seasonId;
+    this.loadingStandings = true;
+    this.archivesApi.getSeasonStandings(seasonId, this.bracket, this.region).subscribe(standings => {
+      this.standings = standings;
+      this.loadingStandings = false;
     });
   }
 }

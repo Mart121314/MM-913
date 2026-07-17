@@ -4,7 +4,7 @@ import { WowApiService, Region, PvpBracket } from '../wow-api.service';
 
 @Injectable({ providedIn: 'root' })
 export class ArchivesApiService {
-  private static readonly STANDINGS_LIMIT = 25;
+  private static readonly STANDINGS_LIMIT = 500;
 
   constructor(private wow: WowApiService) {}
 
@@ -33,29 +33,13 @@ export class ArchivesApiService {
     );
   }
 
-  // The point of an archive is showing how players actually finished each
-  // season, not just its date range - attach top standings per season.
-  getRecentSeasonsWithStandings(
-    bracket: PvpBracket,
-    region: Region = 'eu',
-    count = 4
-  ): Observable<any[]> {
-    return this.getRecentSeasons(count, region).pipe(
-      switchMap(seasons => {
-        if (!seasons.length) {
-          return of([]);
-        }
-        return forkJoin(
-          seasons.map(season =>
-            this.wow.getLeaderboardEntries(season.id, region, bracket).pipe(
-              map(entries => ({
-                ...season,
-                standings: (entries ?? []).slice(0, ArchivesApiService.STANDINGS_LIMIT),
-              }))
-            )
-          )
-        );
-      })
-    );
+  // The point of an archive is showing how players actually finished a
+  // season, not just its date range - fetch one season's standings at a
+  // time (rather than all candidate seasons up front) so switching tabs
+  // stays cheap.
+  getSeasonStandings(seasonId: number, bracket: PvpBracket, region: Region = 'eu'): Observable<any[]> {
+    return this.wow
+      .getLeaderboardEntries(seasonId, region, bracket)
+      .pipe(map(entries => (entries ?? []).slice(0, ArchivesApiService.STANDINGS_LIMIT)));
   }
 }

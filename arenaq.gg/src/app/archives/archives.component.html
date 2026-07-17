@@ -1,4 +1,18 @@
-<h3>Previous Seasons</h3>
+<section class="season-tabs">
+  @if (loadingSeasons) {
+    <div class="status">Loading seasons...</div>
+  } @else {
+    @for (s of seasons; track s.id) {
+      <button
+        type="button"
+        (click)="selectSeason(s.id)"
+        [class.active]="s.id === selectedSeasonId"
+      >
+        Season {{ s.id }}
+      </button>
+    }
+  }
+</section>
 
 <section class="controls">
   <div class="region-controls">
@@ -18,45 +32,41 @@
   </div>
 </section>
 
-@if (loading) {
-  <div class="status">Loading archives...</div>
-} @else {
-  @for (s of seasons; track s.id) {
-    <section class="season-block">
-      <h4>
-        Season {{ s.id }}
-        ({{ s.season_start_timestamp | date }} -
-        {{ s.season_end_timestamp ? (s.season_end_timestamp | date) : 'Present' }})
-      </h4>
+@if (selectedSeason) {
+  <h4>
+    Season {{ selectedSeason.id }}
+    ({{ selectedSeason.season_start_timestamp | date }} -
+    {{ selectedSeason.season_end_timestamp ? (selectedSeason.season_end_timestamp | date) : 'Present' }})
+  </h4>
+}
 
-      @if (s.standings.length) {
-        <table class="standings-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Player</th>
-              <th>Realm</th>
-              <th>Faction</th>
-              <th>Record</th>
-              <th>Rating</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of s.standings; track row.character.id) {
-              <tr>
-                <td>#{{ row.rank }}</td>
-                <td>{{ row.character.name }}</td>
-                <td>{{ row.character.realm.slug }}</td>
-                <td>{{ row.faction.type }}</td>
-                <td>{{ row.season_match_statistics.won }}-{{ row.season_match_statistics.lost }}</td>
-                <td>{{ row.rating }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      } @else {
-        <div class="status">No standings available for this bracket/season.</div>
+@if (loadingStandings) {
+  <div class="status">Loading standings...</div>
+} @else if (standings.length) {
+  <table class="standings-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Player</th>
+        <th>Realm</th>
+        <th>Faction</th>
+        <th>Record</th>
+        <th>Rating</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of standings; track row.character.id) {
+        <tr>
+          <td>#{{ row.rank }}</td>
+          <td>{{ row.character.name }}</td>
+          <td>{{ row.character.realm.slug }}</td>
+          <td>{{ row.faction.type }}</td>
+          <td>{{ row.season_match_statistics.won }}-{{ row.season_match_statistics.lost }}</td>
+          <td>{{ row.rating }}</td>
+        </tr>
       }
-    </section>
-  }
+    </tbody>
+  </table>
+} @else if (!loadingSeasons) {
+  <div class="status">No standings available for this bracket/season.</div>
 }
