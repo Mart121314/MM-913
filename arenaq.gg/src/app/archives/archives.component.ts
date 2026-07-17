@@ -15,7 +15,7 @@ export class ArchivesComponent implements OnInit {
   constructor(private archivesApi: ArchivesApiService) {}
 
   ngOnInit(): void {
-    this.archivesApi.getSeasons([9, 10]).subscribe((data) => {
+    this.archivesApi.getRecentSeasons().subscribe((data) => {
       this.seasons = data;
     });
   }

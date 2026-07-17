@@ -221,7 +221,8 @@ export class WowApiService extends BaseApiService {
           `https://${this.host(region)}/data/wow/pvp-season/${seasonId}` +
           `?namespace=${this.nsDynamic(region)}&locale=en_GB`;
         return this.http.get<any>(url, { headers });
-      })
+      }),
+      catchError(() => of(null))
     );
   }
 
