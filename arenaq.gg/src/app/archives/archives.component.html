@@ -1,8 +1,9 @@
 <h3>Previous Seasons</h3>
 <ul>
-  @for (s of seasons; track s) {
+  @for (s of seasons; track s.id) {
     <li>
-      {{s.name}} ({{s.start_timestamp | date}} - {{s.end_timestamp | date}})
+      Season {{s.id}} ({{s.season_start_timestamp | date}} -
+      {{s.season_end_timestamp ? (s.season_end_timestamp | date) : 'Present'}})
     </li>
   }
 </ul>
