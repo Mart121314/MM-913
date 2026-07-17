@@ -1,0 +1,40 @@
+name: Update BiS Top Snapshot
+
+on:
+  schedule:
+    - cron: '45 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      BLIZZARD_CLIENT_ID: ${{ secrets.BLIZZARD_CLIENT_ID }}
+      BLIZZARD_CLIENT_SECRET: ${{ secrets.BLIZZARD_CLIENT_SECRET }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: arenaq.gg/package-lock.json
+
+      - name: Install dependencies
+        working-directory: arenaq.gg
+        run: npm ci
+
+      - name: Update BiS top snapshot
+        working-directory: arenaq.gg
+        run: npm run bis:update
+
+      - name: Commit BiS data
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: refresh BiS top snapshot'
+          file_pattern: arenaq.gg/data/bis-top.json
